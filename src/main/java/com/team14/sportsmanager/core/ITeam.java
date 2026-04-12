@@ -6,4 +6,6 @@ public interface ITeam {String getTeamName();
     List<IPlayer> getRoster();
     void addMatchResult(int pointsEarned);
     int getTotalPoints();
+    int getGoalDifference();
+    int getHeadToHeadPoints(ITeam opponent);
 }
