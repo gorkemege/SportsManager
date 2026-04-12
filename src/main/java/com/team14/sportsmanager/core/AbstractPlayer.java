@@ -14,4 +14,5 @@ public abstract class AbstractPlayer implements IPlayer {
     @Override public boolean isInjured() { return injured; }
     @Override public int getRemainingInjuryDuration() { return injuryDuration; }
     @Override public void updateAttribute(String name, int val) { attributes.put(name, val); }
+    @Override public void setInjury(int count) { this.injured = true; this.injuryDuration = count; }
 }

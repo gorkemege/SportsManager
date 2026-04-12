@@ -9,4 +9,5 @@ public interface IPlayer {
     boolean isInjured();
     int getRemainingInjuryDuration();
     void updateAttribute(String attrName, int value);
+    void setInjury(int matchCount);
 }
