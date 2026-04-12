@@ -3,7 +3,6 @@ package com.team14.sportsmanager.model;
 import com.team14.sportsmanager.core.ISport;
 import com.team14.sportsmanager.core.ITeam;
 
-package com.team14.sportsmanager.model;
 import com.team14.sportsmanager.core.*;
 import java.util.*;
 
