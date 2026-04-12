@@ -12,7 +12,7 @@ public class SportTest {
     @Test
     public void testSportNameAndPeriods() {
         HeadballSport sport = new HeadballSport();
-        assertEquals("HeadBall", sport.getSportName());
+        assertEquals("Headball", sport.getSportName());
         assertEquals(4, sport.getPeriodCount());
     }
 
