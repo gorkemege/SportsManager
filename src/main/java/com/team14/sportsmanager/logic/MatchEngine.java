@@ -1,4 +1,4 @@
-package com.team14.sportsmanager.logic; 
+package com.team14.sportsmanager.logic;
 
 import com.team14.sportsmanager.core.IMatch;
 import com.team14.sportsmanager.core.IPlayer;
