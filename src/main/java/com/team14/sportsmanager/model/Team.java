@@ -2,6 +2,7 @@ package com.team14.sportsmanager.model;
 
 import com.team14.sportsmanager.core.IPlayer;
 import com.team14.sportsmanager.core.ITeam;
+import com.team14.sportsmanager.core.ICoach;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Map;
 public class Team implements ITeam {
     private String teamName;
     private List<IPlayer> roster;
+    private List<ICoach> coaches;
     private int totalPoints;
     private int goalsScored;
     private int goalsConceded;
@@ -19,6 +21,7 @@ public class Team implements ITeam {
     public Team(String teamName) {
         this.teamName = teamName;
         this.roster = new ArrayList<>();
+        this.coaches = new ArrayList<>();
         this.totalPoints = 0;
         this.goalsScored = 0;
         this.goalsConceded = 0;
@@ -40,6 +43,15 @@ public class Team implements ITeam {
         this.totalPoints += pointsEarned;
         this.goalsScored += goalsFor;
         this.goalsConceded += goalsAgainst;
+    }
+
+    @Override
+    public List<ICoach> getCoachingStaff() {
+        return coaches;
+    }
+
+    public void addCoach(ICoach coach) {
+        this.coaches.add(coach);
     }
 
     @Override

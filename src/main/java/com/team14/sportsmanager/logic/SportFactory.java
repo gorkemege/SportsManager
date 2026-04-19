@@ -4,6 +4,7 @@ import com.team14.sportsmanager.core.ISport;
 import com.team14.sportsmanager.core.ITeam;
 import com.team14.sportsmanager.model.HeadballPlayer;
 import com.team14.sportsmanager.model.HeadballSport;
+import com.team14.sportsmanager.model.HeadballCoach;
 import com.team14.sportsmanager.model.Team;
 
 import java.util.ArrayList;
@@ -34,7 +35,14 @@ public class SportFactory {
                     HeadballPlayer player = new HeadballPlayer("Player " + i + "-" + j, randomHeadPower, randomJumpHeight);
                     team.addPlayer(player);
                 }
-                
+
+                for (int c = 1; c <= 3; c++) {
+                    int headPowerSkill = 50 + rand.nextInt(50);
+                    int jumpSkill = 50 + rand.nextInt(50);
+                    HeadballCoach coach = new HeadballCoach("Coach " + i + "-" + c, headPowerSkill, jumpSkill);
+                    team.addCoach(coach);
+                }
+
                 leagueTeams.add(team);
             }
         } else {
