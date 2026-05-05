@@ -69,6 +69,7 @@ public class Team implements ITeam {
         return h2hPointsMap.getOrDefault(opponent, 0);
     }
 
+    @Override
     public void recordHeadToHead(ITeam opponent, int points) {
         int currentH2H = h2hPointsMap.getOrDefault(opponent, 0);
         h2hPointsMap.put(opponent, currentH2H + points);

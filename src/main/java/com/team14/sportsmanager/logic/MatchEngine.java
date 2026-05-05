@@ -79,27 +79,24 @@ public class MatchEngine implements IMatch {
         int drawPoints = rules.get("Draw");
         int lossPoints = rules.get("Loss");
 
-        Team t1 = (Team) team1;
-        Team t2 = (Team) team2;
-
         if (t1Score > t2Score) {
 
-            t1.addMatchResult(winPoints, t1Score, t2Score);
-            t2.addMatchResult(lossPoints, t2Score, t1Score);
-            t1.recordHeadToHead(t2, winPoints);
-            t2.recordHeadToHead(t1, lossPoints);
+            team1.addMatchResult(winPoints, t1Score, t2Score);
+            team2.addMatchResult(lossPoints, t2Score, t1Score);
+            team1.recordHeadToHead(team2, winPoints);
+            team2.recordHeadToHead(team1, lossPoints);
         } else if (t2Score > t1Score) {
 
-            t2.addMatchResult(winPoints, t2Score, t1Score);
-            t1.addMatchResult(lossPoints, t1Score, t2Score);
-            t2.recordHeadToHead(t1, winPoints);
-            t1.recordHeadToHead(t2, lossPoints);
+            team2.addMatchResult(winPoints, t2Score, t1Score);
+            team1.addMatchResult(lossPoints, t1Score, t2Score);
+            team2.recordHeadToHead(team1, winPoints);
+            team1.recordHeadToHead(team2, lossPoints);
         } else {
 
-            t1.addMatchResult(drawPoints, t1Score, t2Score);
-            t2.addMatchResult(drawPoints, t2Score, t1Score);
-            t1.recordHeadToHead(t2, drawPoints);
-            t2.recordHeadToHead(t1, drawPoints);
+            team1.addMatchResult(drawPoints, t1Score, t2Score);
+            team2.addMatchResult(drawPoints, t2Score, t1Score);
+            team1.recordHeadToHead(team2, drawPoints);
+            team2.recordHeadToHead(team1, drawPoints);
         }
     }
 
