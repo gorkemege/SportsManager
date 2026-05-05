@@ -29,18 +29,15 @@ public class SportFactory {
                 Team team = new Team("HeadBall FC " + i);
            
                 for (int j = 1; j <= 10; j++) {
-                    int randomHeadPower = 50 + rand.nextInt(50); 
-                    int randomJumpHeight = 50 + rand.nextInt(50);
-                    
-                    HeadballPlayer player = new HeadballPlayer("Player " + i + "-" + j, randomHeadPower, randomJumpHeight);
-                    team.addPlayer(player);
+                    int headPower = 50 + rand.nextInt(50);
+                    int jumpHeight = 50 + rand.nextInt(50);
+                    team.addPlayer(new HeadballPlayer("Player " + i + "-" + j, headPower, jumpHeight));
                 }
 
                 for (int c = 1; c <= 3; c++) {
                     int headPowerSkill = 50 + rand.nextInt(50);
                     int jumpSkill = 50 + rand.nextInt(50);
-                    HeadballCoach coach = new HeadballCoach("Coach " + i + "-" + c, headPowerSkill, jumpSkill);
-                    team.addCoach(coach);
+                    team.addCoach(new HeadballCoach("Coach " + i + "-" + c, headPowerSkill, jumpSkill));
                 }
 
                 leagueTeams.add(team);
@@ -50,5 +47,12 @@ public class SportFactory {
         }
 
         return leagueTeams;
+    }
+    public static League createLeague(String sportType) {
+        ISport sport = createSport(sportType);
+        List<ITeam> teams = createLeagueTeams(sportType);
+        League league = new League(sport, teams);
+        league.generateFixtures();
+        return league;
     }
 }
