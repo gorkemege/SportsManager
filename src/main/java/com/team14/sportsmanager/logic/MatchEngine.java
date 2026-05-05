@@ -122,4 +122,12 @@ public class MatchEngine implements IMatch {
     public List<String> getMatchEvents() {
         return matchEvents;
     }
+
+    public ITeam getTeam1() {
+        return team1;
+    }
+
+    public ITeam getTeam2() {
+        return team2;
+    }
 }
