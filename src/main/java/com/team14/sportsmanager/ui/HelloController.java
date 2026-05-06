@@ -39,9 +39,23 @@ public class HelloController {
         subtitle.setTextFill(Color.web("#dddddd"));
         subtitle.setFont(Font.font("System", 16));
         ListView<String> teamList = new ListView<>();
+        java.util.List<String> sortedTeams = new java.util.ArrayList<>();
+
         for (ITeam t : newLeague.getStandings()) {
-            teamList.getItems().add(t.getTeamName());
+            sortedTeams.add(t.getTeamName());
         }
+
+        sortedTeams.sort((isim1, isim2) -> {
+            try {
+                int sayi1 = Integer.parseInt(isim1.replaceAll("[^0-9]", ""));
+                int sayi2 = Integer.parseInt(isim2.replaceAll("[^0-9]", ""));
+                return Integer.compare(sayi1, sayi2);
+            } catch (Exception ex) {
+                return isim1.compareTo(isim2);
+            }
+        });
+
+        teamList.getItems().addAll(sortedTeams);
         teamList.setPrefHeight(300);
         teamList.setPrefWidth(400);
         teamList.setStyle("-fx-font-size: 16px;");
@@ -59,7 +73,7 @@ public class HelloController {
                         break;
                     }
                 }
-               
+
                 Stage currentStage = (Stage) ((javafx.scene.Node) e.getSource()).getScene().getWindow();
                 goToDashboard(newLeague, myTeam, currentStage);
             }
