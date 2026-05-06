@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<BorderPane style="-fx-background-color: #1e1e1e;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.team14.sportsmanager.ui.DashboardController">
+    <top>
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20;">
+            <Label text="LEAGUE DASHBOARD" textFill="WHITE" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Label fx:id="weekLabel" text="Current Week: 0" textFill="#aaaaaa" style="-fx-font-size: 16px;"/>
+        </VBox>
+    </top>
+    <center>
+        <HBox spacing="20" style="-fx-padding: 20;">
+            <VBox HBox.hgrow="ALWAYS" spacing="10" prefWidth="300">
+                <Label text="Standings" textFill="WHITE" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <TableView fx:id="standingsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="teamNameCol" text="Team Name" prefWidth="200"/>
+                        <TableColumn fx:id="pointsCol" text="Points" prefWidth="80"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: #2b2b2b; -fx-padding: 15; -fx-background-radius: 5;" prefWidth="450">
+                <Label fx:id="selectedTeamNameLabel" text="Select a team to see details" textFill="#4CAF50" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                <Label text="Players (Roster)" textFill="#dddddd" style="-fx-font-size: 16px;"/>
+                <TableView fx:id="playersTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="playerNameCol" text="Player Name" prefWidth="180"/>
+                        <TableColumn fx:id="playerAttrCol" text="Attributes" prefWidth="250"/>
+                    </columns>
+                </TableView>
+                <Label text="Coaches" textFill="#dddddd" style="-fx-font-size: 16px;"/>
+                <ListView fx:id="coachesList" prefHeight="120"/>
+            </VBox>
+        </HBox>
+    </center>
+    <bottom>
+        <VBox alignment="CENTER" style="-fx-padding: 20;">
+            <Button text="Simulate Next Week" onAction="#onNextWeekClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
+        </VBox>
+    </bottom>
+</BorderPane>
