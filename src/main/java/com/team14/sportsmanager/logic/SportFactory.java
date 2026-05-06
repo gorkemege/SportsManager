@@ -2,6 +2,9 @@ package com.team14.sportsmanager.logic;
 
 import com.team14.sportsmanager.core.ISport;
 import com.team14.sportsmanager.core.ITeam;
+import com.team14.sportsmanager.model.HandballCoach;
+import com.team14.sportsmanager.model.HandballPlayer;
+import com.team14.sportsmanager.model.HandballSport;
 import com.team14.sportsmanager.model.HeadballPlayer;
 import com.team14.sportsmanager.model.HeadballSport;
 import com.team14.sportsmanager.model.HeadballCoach;
@@ -14,8 +17,11 @@ import java.util.Random;
 public class SportFactory {
 
     public static ISport createSport(String sportType) {
-        if ("HeadBall".equalsIgnoreCase(sportType) || "Headball".equalsIgnoreCase(sportType)) {
+        if ("HeadBall".equalsIgnoreCase(sportType)) {
             return new HeadballSport();
+        }
+        else if ("Handball".equalsIgnoreCase(sportType)) {
+            return new HandballSport();
         }
         throw new IllegalArgumentException("Unknown sport type: " + sportType);
     }
@@ -24,7 +30,7 @@ public class SportFactory {
         List<ITeam> leagueTeams = new ArrayList<>();
         Random rand = new Random();
 
-        if ("HeadBall".equalsIgnoreCase(sportType) || "Headball".equalsIgnoreCase(sportType)) {
+        if ("HeadBall".equalsIgnoreCase(sportType)) {
             for (int i = 1; i <= 20; i++) {
                 Team team = new Team("HeadBall FC " + i);
            
@@ -42,8 +48,31 @@ public class SportFactory {
 
                 leagueTeams.add(team);
             }
-        } else {
-            throw new IllegalArgumentException("Unknown sport type for teams: " + sportType);
+        } 
+        else if ("Handball".equalsIgnoreCase(sportType)) {
+            for (int i = 1; i <= 20; i++) {
+                Team team = new Team("Handball FC " + i);
+
+                for (int j = 1; j <= 10; j++) {
+                    int throwPower = 50 + rand.nextInt(50);
+                    int speed = 50 + rand.nextInt(50);
+                    int agility = 50 + rand.nextInt(50);
+                    int goalkeeping = 50 + rand.nextInt(50);
+                    team.addPlayer(new HandballPlayer("Player " + i + "-" + j, throwPower, speed, agility, goalkeeping));
+                }
+
+                for (int c = 1; c <= 3; c++) {
+                    int throwSkill = 50 + rand.nextInt(50);
+                    int speedSkill = 50 + rand.nextInt(50);
+                    int agilitySkill = 50 + rand.nextInt(50);
+                    team.addCoach(new HandballCoach("Coach " + i + "-" + c, throwSkill, speedSkill, agilitySkill));
+                }
+
+                leagueTeams.add(team);
+            }
+        } 
+        else {
+            throw new IllegalArgumentException("Unknown sport type: " + sportType);
         }
 
         return leagueTeams;
