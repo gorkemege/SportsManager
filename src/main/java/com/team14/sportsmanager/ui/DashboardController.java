@@ -22,10 +22,18 @@ public class DashboardController {
     @FXML private TableColumn<IPlayer, String> playerAttrCol;
     @FXML private ListView<String> coachesList;
     private League currentLeague;
-    public void setLeague(League league) {
+    private ITeam myTeam;
+
+
+    public void setLeagueAndTeam(League league, ITeam chosenTeam) {
         this.currentLeague = league;
+        this.myTeam = chosenTeam;
+
         setupTables();
         updateUI();
+
+        standingsTable.getSelectionModel().select(myTeam);
+        showTeamDetails(myTeam);
     }
     private void setupTables() {
         teamNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTeamName()));
@@ -42,8 +50,18 @@ public class DashboardController {
         });
     }
     private void updateUI() {
-        weekLabel.setText("Current Week: " + currentLeague.getCurrentWeek());
+        if (myTeam != null) {
+            weekLabel.setText("Manager of: " + myTeam.getTeamName() + "  |  Current Week: " + currentLeague.getCurrentWeek());
+        } else {
+            weekLabel.setText("Current Week: " + currentLeague.getCurrentWeek());
+        }
+
         standingsTable.setItems(FXCollections.observableArrayList(currentLeague.getStandings()));
+
+        ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            playersTable.refresh();
+        }
     }
     private void showTeamDetails(ITeam team) {
         selectedTeamNameLabel.setText(team.getTeamName() + " Details");
@@ -57,6 +75,13 @@ public class DashboardController {
     protected void onNextWeekClick() {
         if (!currentLeague.isLeagueFinished()) {
             currentLeague.advanceWeek();
+            for (ITeam team : currentLeague.getStandings()) {
+                for (ICoach coach : team.getCoachingStaff()) {
+                    for (IPlayer player : team.getRoster()) {
+                        coach.train(player);
+                    }
+                }
+            }
             updateUI();
             ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
             if (selected != null) {
