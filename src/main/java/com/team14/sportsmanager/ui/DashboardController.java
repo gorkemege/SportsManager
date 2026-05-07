@@ -27,6 +27,8 @@ public class DashboardController {
     @FXML
     private TableColumn<IPlayer, String> playerNameCol;
     @FXML
+    private javafx.scene.control.ListView<String> fixtureList;
+    @FXML
     private TableColumn<IPlayer, String> playerAttrCol;
     @FXML
     private ListView<String> coachesList;
@@ -72,6 +74,22 @@ public class DashboardController {
         ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             playersTable.refresh();
+        }
+        if (fixtureList != null && !currentLeague.isLeagueFinished()) {
+            fixtureList.getItems().clear();
+            java.util.List<com.team14.sportsmanager.core.IMatch> weekMatches = currentLeague.getFixtures().get(currentLeague.getCurrentWeek());
+
+            for (com.team14.sportsmanager.core.IMatch match : weekMatches) {
+                com.team14.sportsmanager.logic.MatchEngine engine = (com.team14.sportsmanager.logic.MatchEngine) match;
+                String home = engine.getTeam1().getTeamName();
+                String away = engine.getTeam2().getTeamName();
+                String matchText = home + " vs " + away;
+
+                if (home.equals(myTeam.getTeamName()) || away.equals(myTeam.getTeamName())) {
+                    matchText = ">>> " + matchText + " <<< (YOUR MATCH)";
+                }
+                fixtureList.getItems().add(matchText);
+            }
         }
     }
 
