@@ -100,22 +100,184 @@ public class DashboardController {
             return;
         }
 
-        currentLeague.advanceWeek();
-        for (com.team14.sportsmanager.core.ITeam team : currentLeague.getStandings()) {
-            for (com.team14.sportsmanager.core.ICoach coach : team.getCoachingStaff()) {
-                for (com.team14.sportsmanager.core.IPlayer player : team.getRoster()) {
-                    coach.train(player);
-                }
+        com.team14.sportsmanager.core.IMatch myMatch = null;
+        com.team14.sportsmanager.core.ITeam opponent = null;
+
+        java.util.List<com.team14.sportsmanager.core.IMatch> weekMatches = currentLeague.getFixtures().get(currentLeague.getCurrentWeek());
+
+        for (com.team14.sportsmanager.core.IMatch match : weekMatches) {
+            com.team14.sportsmanager.logic.MatchEngine engine = (com.team14.sportsmanager.logic.MatchEngine) match;
+            if (engine.getTeam1().getTeamName().equals(myTeam.getTeamName())) {
+                myMatch = engine;
+                opponent = engine.getTeam2();
+                break;
+            } else if (engine.getTeam2().getTeamName().equals(myTeam.getTeamName())) {
+                myMatch = engine;
+                opponent = engine.getTeam1();
+                break;
             }
         }
 
-        updateUI();
-        com.team14.sportsmanager.core.ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            showTeamDetails(selected);
-        }
+        openLiveMatchScreen(myMatch, opponent);
     }
 
+    private void openLiveMatchScreen(com.team14.sportsmanager.core.IMatch matchObj, com.team14.sportsmanager.core.ITeam opponent) {
+        com.team14.sportsmanager.logic.MatchEngine actualMatch = (com.team14.sportsmanager.logic.MatchEngine) matchObj;
+        javafx.stage.Stage matchStage = new javafx.stage.Stage();
+        matchStage.setTitle("LIVE MATCH");
+        final int[] currentQuarter = {1};
+        javafx.scene.layout.VBox mainBox = new javafx.scene.layout.VBox(30);
+        mainBox.setStyle("-fx-background-color: #1a1a1a; -fx-padding: 40;");
+        mainBox.setAlignment(javafx.geometry.Pos.CENTER);
+        javafx.scene.control.Label quarterLabel = new javafx.scene.control.Label("QUARTER 1");
+        quarterLabel.setTextFill(javafx.scene.paint.Color.ORANGE);
+        quarterLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 24));
+        javafx.scene.layout.HBox scoreBox = new javafx.scene.layout.HBox(40);
+        scoreBox.setAlignment(javafx.geometry.Pos.CENTER);
+        javafx.scene.control.Label myTeamLabel = new javafx.scene.control.Label(myTeam.getTeamName() + "\n0");
+        myTeamLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        myTeamLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 32));
+        myTeamLabel.setAlignment(javafx.geometry.Pos.CENTER);
+        myTeamLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        javafx.scene.control.Label vsLabel = new javafx.scene.control.Label("-");
+        vsLabel.setTextFill(javafx.scene.paint.Color.GRAY);
+        vsLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 36));
+        javafx.scene.control.Label oppTeamLabel = new javafx.scene.control.Label(opponent.getTeamName() + "\n0");
+        oppTeamLabel.setTextFill(javafx.scene.paint.Color.WHITE);
+        oppTeamLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 32));
+        oppTeamLabel.setAlignment(javafx.geometry.Pos.CENTER);
+        oppTeamLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        scoreBox.getChildren().addAll(myTeamLabel, vsLabel, oppTeamLabel);
+        javafx.scene.control.Button playQuarterBtn = new javafx.scene.control.Button("PLAY QUARTER 1");
+        playQuarterBtn.setStyle("-fx-background-color: #e50914; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18px; -fx-padding: 10 20;");
+        javafx.scene.control.Button subsBtn = new javafx.scene.control.Button("Make Substitutions / Tactics");
+        subsBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+        subsBtn.setOnAction(e -> openSubstitutionScreen(actualMatch));
+        playQuarterBtn.setOnAction(e -> {
+            if (!actualMatch.isMatchFinished()) {
+                actualMatch.simulatePeriod();
+                int myRealScore = actualMatch.getCurrentScore().get(myTeam);
+                int oppRealScore = actualMatch.getCurrentScore().get(opponent);
+                myTeamLabel.setText(myTeam.getTeamName() + "\n" + myRealScore);
+                oppTeamLabel.setText(opponent.getTeamName() + "\n" + oppRealScore);
+                currentQuarter[0]++;
+                if (!actualMatch.isMatchFinished()) {
+                    quarterLabel.setText("QUARTER " + currentQuarter[0]);
+                    playQuarterBtn.setText("PLAY QUARTER " + currentQuarter[0]);
+                } else {
+                    if (myRealScore > oppRealScore) {
+                        quarterLabel.setText("MATCH FINISHED! YOU WON!");
+                        quarterLabel.setTextFill(javafx.scene.paint.Color.LIMEGREEN);
+                    } else if (myRealScore < oppRealScore) {
+                        quarterLabel.setText("MATCH FINISHED! YOU LOST!");
+                        quarterLabel.setTextFill(javafx.scene.paint.Color.RED);
+                    } else {
+                        quarterLabel.setText("MATCH FINISHED! DRAW!");
+                        quarterLabel.setTextFill(javafx.scene.paint.Color.YELLOW);
+                    }
+                    playQuarterBtn.setText("END MATCH & SIMULATE LEAGUE");
+                    subsBtn.setDisable(true);
+                }
+            } else {
+                matchStage.close();
+                currentLeague.advanceWeek();
+                for (com.team14.sportsmanager.core.ITeam team : currentLeague.getStandings()) {
+                    for (com.team14.sportsmanager.core.ICoach coach : team.getCoachingStaff()) {
+                        for (com.team14.sportsmanager.core.IPlayer player : team.getRoster()) {
+                            coach.train(player);
+                        }
+                    }
+                }
+                updateUI();
+                com.team14.sportsmanager.core.ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    showTeamDetails(selected);
+                }
+            }
+        });
+        mainBox.getChildren().addAll(quarterLabel, scoreBox, playQuarterBtn, subsBtn);
+        javafx.scene.Scene matchScene = new javafx.scene.Scene(mainBox, 700, 500);
+        matchStage.setScene(matchScene);
+        matchStage.centerOnScreen();
+        matchStage.showAndWait();
+    }
+    private void openSubstitutionScreen(com.team14.sportsmanager.logic.MatchEngine actualMatch) {
+        javafx.stage.Stage subStage = new javafx.stage.Stage();
+        subStage.setTitle("Substitutions & Tactics");
+        javafx.scene.layout.VBox mainBox = new javafx.scene.layout.VBox(20);
+        mainBox.setStyle("-fx-background-color: #2b2b2b; -fx-padding: 30;");
+        mainBox.setAlignment(javafx.geometry.Pos.CENTER);
+        javafx.scene.control.Label title = new javafx.scene.control.Label("MAKE SUBSTITUTIONS");
+        title.setTextFill(javafx.scene.paint.Color.WHITE);
+        title.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 20));
+
+        javafx.scene.control.ListView<com.team14.sportsmanager.core.IPlayer> startersList = new javafx.scene.control.ListView<>();
+        startersList.getItems().addAll(myStarters);
+        startersList.setCellFactory(param -> new javafx.scene.control.ListCell<com.team14.sportsmanager.core.IPlayer>() {
+            @Override
+            protected void updateItem(com.team14.sportsmanager.core.IPlayer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName() + " | Stats: " + item.getAttributes());
+                }
+            }
+        });
+
+        javafx.scene.control.ListView<com.team14.sportsmanager.core.IPlayer> subsList = new javafx.scene.control.ListView<>();
+        subsList.getItems().addAll(mySubs);
+        subsList.setCellFactory(param -> new javafx.scene.control.ListCell<com.team14.sportsmanager.core.IPlayer>() {
+            @Override
+            protected void updateItem(com.team14.sportsmanager.core.IPlayer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName() + " | Stats: " + item.getAttributes());
+                }
+            }
+        });
+
+        javafx.scene.control.Button swapBtn = new javafx.scene.control.Button("< SWAP PLAYERS >");
+        swapBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-weight: bold;");
+        swapBtn.setOnAction(e -> {
+            com.team14.sportsmanager.core.IPlayer pStarter = startersList.getSelectionModel().getSelectedItem();
+            com.team14.sportsmanager.core.IPlayer pSub = subsList.getSelectionModel().getSelectedItem();
+            if (pStarter != null && pSub != null) {
+                if (actualMatch != null) {
+                    actualMatch.applyUserSubstitution(pStarter, pSub);
+                }
+                myStarters.remove(pStarter);
+                mySubs.remove(pSub);
+                myStarters.add(pSub);
+                mySubs.add(pStarter);
+                startersList.getItems().remove(pStarter);
+                subsList.getItems().remove(pSub);
+                startersList.getItems().add(pSub);
+                subsList.getItems().add(pStarter);
+            }
+        });
+
+        javafx.scene.control.ComboBox<String> tacticBox = new javafx.scene.control.ComboBox<>();
+        tacticBox.getItems().addAll("4-2-1 Balanced", "3-3-1 Offensive", "5-1-1 Defensive");
+        tacticBox.setValue(myTactic);
+        javafx.scene.control.Button saveBtn = new javafx.scene.control.Button("CONFIRM CHANGES");
+        saveBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
+        saveBtn.setOnAction(e -> {
+            myTactic = tacticBox.getValue();
+            subStage.close();
+        });
+
+        javafx.scene.layout.HBox listsBox = new javafx.scene.layout.HBox(20, new javafx.scene.layout.VBox(5, new javafx.scene.control.Label("On Pitch"), startersList), swapBtn, new javafx.scene.layout.VBox(5, new javafx.scene.control.Label("Bench"), subsList));
+        listsBox.setAlignment(javafx.geometry.Pos.CENTER);
+        mainBox.getChildren().addAll(title, listsBox, new javafx.scene.control.Label("Change Tactic:"), tacticBox, saveBtn);
+        javafx.scene.Scene scene = new javafx.scene.Scene(mainBox, 850, 500);
+        scene.getRoot().setStyle("-fx-base: #2b2b2b;");
+        subStage.setScene(scene);
+        subStage.centerOnScreen();
+        subStage.showAndWait();
+    }
     @FXML
     protected void onLockerRoomClick() {
         javafx.stage.Stage prepStage = new javafx.stage.Stage();
