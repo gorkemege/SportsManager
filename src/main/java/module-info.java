@@ -5,4 +5,6 @@ module com.team14.sportsmanager {
     opens com.team14.sportsmanager.ui to javafx.fxml;
     exports com.team14.sportsmanager.ui;
     exports com.team14.sportsmanager.core;
+    exports com.team14.sportsmanager.logic;
+    exports com.team14.sportsmanager.model;
 }
