@@ -54,9 +54,13 @@ public class DashboardController {
             }
         });
         playerNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
+        playerNameCol.setPrefWidth(160);
+        playerAttrCol.setPrefWidth(400);
+        playersTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         playerAttrCol.setCellValueFactory(cellData -> {
             IPlayer player = cellData.getValue();
-            return new SimpleStringProperty(player.getAttributes().toString());
+            String injuryStatus = player.isInjured() ? " INJURED (" + player.getRemainingInjuryDuration() + " games" : "";
+            return new SimpleStringProperty(player.getAttributes().toString() + injuryStatus);
         });
     }
 
@@ -180,7 +184,7 @@ public class DashboardController {
                 }
             } else {
                 matchStage.close();
-                currentLeague.advanceWeek();
+                currentLeague.advanceWeekExcluding(actualMatch);
                 for (com.team14.sportsmanager.core.ITeam team : currentLeague.getStandings()) {
                     for (com.team14.sportsmanager.core.ICoach coach : team.getCoachingStaff()) {
                         for (com.team14.sportsmanager.core.IPlayer player : team.getRoster()) {

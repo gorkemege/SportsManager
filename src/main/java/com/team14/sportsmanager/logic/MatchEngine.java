@@ -68,6 +68,23 @@ public class MatchEngine implements IMatch {
 
     public void finalizeMatch() {
         updateLeagueTable();
+        applyInjuries();
+    }
+
+    private void applyInjuries() {
+        Random rand = new Random();
+        applyInjuriesToTeam(team1, rand);
+        applyInjuriesToTeam(team2, rand);
+    }
+
+    private void applyInjuriesToTeam(ITeam team, Random rand) {
+        for (IPlayer player : team.getRoster()) {
+            if (!player.isInjured() && rand.nextInt(100) < 5) {
+                int duration = 1 + rand.nextInt(3);
+                player.setInjury(duration);
+                matchEvents.add("INJURY: " + player.getName() + " is injured for " + duration + " match(es)!");
+            }
+        }
     }
 
     public void updateLeagueTable() {
