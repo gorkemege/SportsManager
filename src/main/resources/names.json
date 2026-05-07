@@ -1,0 +1,51 @@
+{
+  "maleFirstNames": [
+    "Ahmet", "Mehmet", "Ali", "Can", "Burak", "Emre", "Murat", "Serkan", "Oğuz", "Kerem",
+    "Tarık", "Baran", "Ege", "Deniz", "Kaan", "Yusuf", "İbrahim", "Hasan", "Hüseyin", "Ömer",
+    "Selim", "Alp", "Çağan", "Doruk", "Furkan", "Görkem", "Haluk", "İlker", "Cem", "Tolga",
+    "James", "Liam", "Noah", "Oliver", "Elijah", "Lucas", "Mason", "Ethan", "Aiden", "Logan",
+    "Sebastian", "Jack", "Owen", "Daniel", "Henry", "Alexander", "Michael", "Benjamin", "Carter", "Ryan",
+    "Carlos", "Diego", "Luis", "Miguel", "Andres", "Pablo", "Jorge", "Ricardo", "Fernando", "Eduardo",
+    "Luca", "Marco", "Matteo", "Giovanni", "Francesco", "Antonio", "Roberto", "Sergio", "Andrea", "Pietro",
+    "Leon", "Felix", "Maximilian", "Paul", "Jonas", "David", "Lukas", "Simon", "Julian", "Florian",
+    "Antoine", "Hugo", "Théo", "Maxime", "Lucas", "Arthur", "Nathan", "Raphaël", "Clément", "Baptiste",
+    "Ivan", "Dmitri", "Alexei", "Nikolai", "Mikhail", "Andrei", "Vladimir", "Sergei", "Pavel", "Roman"
+  ],
+  "femaleFirstNames": [
+    "Ayşe", "Fatma", "Zeynep", "Elif", "Selin", "Büşra", "Merve", "Esra", "Gizem", "Ceren",
+    "Dilara", "Ebru", "Feyza", "Gamze", "Hande", "İrem", "Jale", "Kübra", "Leyla", "Melis",
+    "Nisan", "Özge", "Pınar", "Rüya", "Sibel", "Tuğba", "Ümit", "Vildan", "Yasemin", "Zümrüt",
+    "Emma", "Olivia", "Ava", "Sophia", "Isabella", "Mia", "Charlotte", "Amelia", "Harper", "Evelyn",
+    "Abigail", "Emily", "Elizabeth", "Sofia", "Avery", "Ella", "Scarlett", "Grace", "Chloe", "Victoria",
+    "Sofia", "Valentina", "Camila", "Isabella", "Lucia", "Maria", "Ana", "Elena", "Paula", "Laura",
+    "Giulia", "Chiara", "Martina", "Sara", "Alessia", "Elisa", "Francesca", "Valentina", "Aurora", "Beatrice",
+    "Anna", "Marie", "Sophie", "Laura", "Julia", "Lisa", "Lena", "Hannah", "Sarah", "Katharina",
+    "Léa", "Chloé", "Manon", "Camille", "Inès", "Jade", "Louise", "Alice", "Juliette", "Anaïs",
+    "Anastasia", "Ekaterina", "Natalia", "Olga", "Irina", "Elena", "Maria", "Daria", "Oksana", "Yulia"
+  ],
+  "lastNames": [
+    "Yılmaz", "Kaya", "Demir", "Çelik", "Şahin", "Yıldız", "Yıldırım", "Öztürk", "Aydın", "Özdemir",
+    "Arslan", "Doğan", "Kılıç", "Aslan", "Çetin", "Erdoğan", "Koç", "Kurt", "Özkan", "Şimşek",
+    "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Wilson", "Taylor",
+    "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Robinson", "Clark", "Lewis",
+    "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Perez", "Sanchez", "Ramirez", "Torres", "Flores",
+    "Rossi", "Ferrari", "Esposito", "Bianchi", "Romano", "Colombo", "Ricci", "Marino", "Greco", "Bruno",
+    "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Schulz", "Hoffmann",
+    "Dupont", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel", "Garcia", "David",
+    "Ivanov", "Petrov", "Sidorov", "Kuznetsov", "Popov", "Sokolov", "Lebedev", "Kozlov", "Novikov", "Morozov"
+  ],
+  "teamNames": {
+    "Headball": [
+      "Thunder Heads", "Iron Skulls", "Steel Foreheads", "Blazing Headers", "Rapid Craniums",
+      "Golden Temples", "Silver Noggins", "Bronze Domes", "Cosmic Headers", "Galactic Skulls",
+      "Inferno Heads", "Arctic Foreheads", "Storm Craniums", "Fire Domes", "Ice Headers",
+      "Shadow Skulls", "Phantom Headers", "Ghost Domes", "Titan Foreheads", "Legend Heads"
+    ],
+    "Handball": [
+      "Thunder Hands", "Iron Fists", "Steel Palms", "Blazing Throwers", "Rapid Slingers",
+      "Golden Grips", "Silver Throws", "Bronze Catches", "Cosmic Handlers", "Galactic Throwers",
+      "Inferno Hands", "Arctic Palms", "Storm Grips", "Fire Throwers", "Ice Handlers",
+      "Shadow Fists", "Phantom Throwers", "Ghost Palms", "Titan Handlers", "Legend Hands"
+    ]
+  }
+}

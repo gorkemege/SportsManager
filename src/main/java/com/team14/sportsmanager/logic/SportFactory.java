@@ -17,7 +17,7 @@ import java.util.Random;
 public class SportFactory {
 
     public static ISport createSport(String sportType) {
-        if ("HeadBall".equalsIgnoreCase(sportType)) {
+        if ("Headball".equalsIgnoreCase(sportType)) {
             return new HeadballSport();
         }
         else if ("Handball".equalsIgnoreCase(sportType)) {
@@ -30,42 +30,46 @@ public class SportFactory {
         List<ITeam> leagueTeams = new ArrayList<>();
         Random rand = new Random();
 
+        List<String> teamNames = NameGenerator.getTeamNames(sportType);
+
         if ("HeadBall".equalsIgnoreCase(sportType)) {
-            for (int i = 1; i <= 20; i++) {
-                Team team = new Team("HeadBall FC " + i);
+            for (int i = 0; i <= 20; i++) {
+                String teamName = (teamNames.size() > i) ? teamNames.get(i) : "Headball FC " + (i + 1);
+                Team team = new Team(teamName);
            
-                for (int j = 1; j <= 10; j++) {
+                for (int j = 0; j <= 10; j++) {
                     int headPower = 50 + rand.nextInt(50);
                     int jumpHeight = 50 + rand.nextInt(50);
-                    team.addPlayer(new HeadballPlayer("Player " + i + "-" + j, headPower, jumpHeight));
+                    team.addPlayer(new HeadballPlayer(NameGenerator.randomName(), headPower, jumpHeight));
                 }
 
-                for (int c = 1; c <= 3; c++) {
+                for (int c = 0; c <= 3; c++) {
                     int headPowerSkill = 50 + rand.nextInt(50);
                     int jumpSkill = 50 + rand.nextInt(50);
-                    team.addCoach(new HeadballCoach("Coach " + i + "-" + c, headPowerSkill, jumpSkill));
+                    team.addCoach(new HeadballCoach(NameGenerator.randomName(), headPowerSkill, jumpSkill));
                 }
 
                 leagueTeams.add(team);
             }
         } 
         else if ("Handball".equalsIgnoreCase(sportType)) {
-            for (int i = 1; i <= 20; i++) {
-                Team team = new Team("Handball FC " + i);
+            for (int i = 0; i <= 20; i++) {
+                String teamName = (teamNames.size() > i) ? teamNames.get(i) : "Handball FC " + (i + 1);
+                Team team = new Team(teamName);
 
-                for (int j = 1; j <= 10; j++) {
+                for (int j = 0; j <= 10; j++) {
                     int throwPower = 50 + rand.nextInt(50);
                     int speed = 50 + rand.nextInt(50);
                     int agility = 50 + rand.nextInt(50);
                     int goalkeeping = 50 + rand.nextInt(50);
-                    team.addPlayer(new HandballPlayer("Player " + i + "-" + j, throwPower, speed, agility, goalkeeping));
+                    team.addPlayer(new HandballPlayer(NameGenerator.randomName(), throwPower, speed, agility, goalkeeping));
                 }
 
-                for (int c = 1; c <= 3; c++) {
+                for (int c = 0; c <= 3; c++) {
                     int throwSkill = 50 + rand.nextInt(50);
                     int speedSkill = 50 + rand.nextInt(50);
                     int agilitySkill = 50 + rand.nextInt(50);
-                    team.addCoach(new HandballCoach("Coach " + i + "-" + c, throwSkill, speedSkill, agilitySkill));
+                    team.addCoach(new HandballCoach(NameGenerator.randomName(), throwSkill, speedSkill, agilitySkill));
                 }
 
                 leagueTeams.add(team);

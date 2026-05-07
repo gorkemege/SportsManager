@@ -1,6 +1,7 @@
 module com.team14.sportsmanager {
     requires javafx.controls;
     requires javafx.fxml;
+    requires org.xerial.sqlitejdbc;
 
     opens com.team14.sportsmanager.ui to javafx.fxml;
     exports com.team14.sportsmanager.ui;
