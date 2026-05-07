@@ -57,11 +57,11 @@ public class DashboardController {
         });
         playerNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
         playerNameCol.setPrefWidth(160);
-        playerAttrCol.setPrefWidth(400);
+        playerAttrCol.setPrefWidth(600);
         playersTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         playerAttrCol.setCellValueFactory(cellData -> {
             IPlayer player = cellData.getValue();
-            String injuryStatus = player.isInjured() ? " INJURED (" + player.getRemainingInjuryDuration() + " games" : "";
+            String injuryStatus = player.isInjured() ? " INJURED (" + player.getRemainingInjuryDuration() + " games)" : "";
             return new SimpleStringProperty(player.getAttributes().toString() + injuryStatus);
         });
     }
@@ -154,7 +154,19 @@ public class DashboardController {
             }
         }
 
-        openLiveMatchScreen(myMatch, opponent);
+        if (myMatch == null || opponent == null) {
+            currentLeague.advanceWeek();
+            for (com.team14.sportsmanager.core.ITeam team : currentLeague.getStandings()) {
+                for (com.team14.sportsmanager.core.ICoach coach : team.getCoachingStaff()) {
+                    for (com.team14.sportsmanager.core.IPlayer player : team.getRoster()) {
+                        coach.train(player);
+                    }
+                }
+            }
+            updateUI();
+        } else {
+            openLiveMatchScreen(myMatch, opponent);
+        }
     }
 
     private void openLiveMatchScreen(com.team14.sportsmanager.core.IMatch matchObj, com.team14.sportsmanager.core.ITeam opponent) {
@@ -332,6 +344,12 @@ public class DashboardController {
         javafx.scene.control.ListView<String> subsList = new javafx.scene.control.ListView<>();
 
         for (com.team14.sportsmanager.core.IPlayer p : myTeam.getRoster()) {
+            if (p.isInjured()) {
+                rosterList.getItems().add(p.getName() + " [INJURED]");
+                myStarters.removeIf(s -> s.getName().equals(p.getName()));
+                mySubs.removeIf(s -> s.getName().equals(p.getName()));
+                continue;
+            }
             boolean isStarter = myStarters.stream().anyMatch(s -> s.getName().equals(p.getName()));
             boolean isSub = mySubs.stream().anyMatch(s -> s.getName().equals(p.getName()));
 
@@ -348,6 +366,14 @@ public class DashboardController {
         btnStarter.setOnAction(e -> {
             String sel = rosterList.getSelectionModel().getSelectedItem();
             if (sel != null && startersList.getItems().size() < 7) {
+                IPlayer selectedPlayer = myTeam.getRoster().stream()
+                        .filter(p -> p.getName().equals(sel))
+                        .findFirst().orElse(null);
+                if (selectedPlayer != null && selectedPlayer.isInjured()) {
+                    title.setText("ERROR: " + sel + " is injured and cannot play!");
+                    title.setTextFill(javafx.scene.paint.Color.RED);
+                    return;
+                }
                 rosterList.getItems().remove(sel);
                 startersList.getItems().add(sel);
             }
@@ -357,6 +383,14 @@ public class DashboardController {
         btnSub.setOnAction(e -> {
             String sel = rosterList.getSelectionModel().getSelectedItem();
             if (sel != null && subsList.getItems().size() < 3) {
+                IPlayer selectedPlayer = myTeam.getRoster().stream()
+                        .filter(p -> p.getName().equals(sel))
+                        .findFirst().orElse(null);
+                if (selectedPlayer != null && selectedPlayer.isInjured()) {
+                    title.setText("ERROR: " + sel + " is injured and cannot play!");
+                    title.setTextFill(javafx.scene.paint.Color.RED);
+                    return;
+                }
                 rosterList.getItems().remove(sel);
                 subsList.getItems().add(sel);
             }

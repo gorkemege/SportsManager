@@ -10,4 +10,5 @@ public interface IPlayer {
     int getRemainingInjuryDuration();
     void updateAttribute(String attrName, int value);
     void setInjury(int matchCount);
+    void decreaseInjuryDuration();
 }

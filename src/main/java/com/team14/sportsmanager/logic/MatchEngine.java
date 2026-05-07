@@ -79,7 +79,9 @@ public class MatchEngine implements IMatch {
 
     private void applyInjuriesToTeam(ITeam team, Random rand) {
         for (IPlayer player : team.getRoster()) {
-            if (!player.isInjured() && rand.nextInt(100) < 5) {
+            if (player.isInjured()) {
+                player.decreaseInjuryDuration();
+            } else if (rand.nextInt(100) < 5) {
                 int duration = 1 + rand.nextInt(3);
                 player.setInjury(duration);
                 matchEvents.add("INJURY: " + player.getName() + " is injured for " + duration + " match(es)!");

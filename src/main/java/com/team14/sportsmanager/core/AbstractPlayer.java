@@ -15,4 +15,13 @@ public abstract class AbstractPlayer implements IPlayer {
     @Override public int getRemainingInjuryDuration() { return injuryDuration; }
     @Override public void updateAttribute(String name, int val) { attributes.put(name, val); }
     @Override public void setInjury(int count) { this.injured = true; this.injuryDuration = count; }
+    @Override
+    public void decreaseInjuryDuration() {
+        if (injured && injuryDuration > 0) {
+            injuryDuration--;
+            if (injuryDuration == 0) {
+                injured = false;
+            }
+        }
+    }
 }

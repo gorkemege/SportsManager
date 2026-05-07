@@ -38,14 +38,14 @@ public class SportFactory {
                 Team team = new Team(teamName);
            
                 for (int j = 0; j <= 10; j++) {
-                    int headPower = 50 + rand.nextInt(50);
-                    int jumpHeight = 50 + rand.nextInt(50);
+                    int headPower = 50 + rand.nextInt(5);
+                    int jumpHeight = 50 + rand.nextInt(5);
                     team.addPlayer(new HeadballPlayer(NameGenerator.randomName(), headPower, jumpHeight));
                 }
 
                 for (int c = 0; c <= 3; c++) {
-                    int headPowerSkill = 50 + rand.nextInt(50);
-                    int jumpSkill = 50 + rand.nextInt(50);
+                    int headPowerSkill = 50 + rand.nextInt(5);
+                    int jumpSkill = 50 + rand.nextInt(5);
                     team.addCoach(new HeadballCoach(NameGenerator.randomName(), headPowerSkill, jumpSkill));
                 }
 
@@ -58,17 +58,17 @@ public class SportFactory {
                 Team team = new Team(teamName);
 
                 for (int j = 0; j <= 10; j++) {
-                    int throwPower = 50 + rand.nextInt(50);
-                    int speed = 50 + rand.nextInt(50);
-                    int agility = 50 + rand.nextInt(50);
-                    int goalkeeping = 50 + rand.nextInt(50);
+                    int throwPower = 50 + rand.nextInt(5);
+                    int speed = 50 + rand.nextInt(5);
+                    int agility = 50 + rand.nextInt(5);
+                    int goalkeeping = 50 + rand.nextInt(5);
                     team.addPlayer(new HandballPlayer(NameGenerator.randomName(), throwPower, speed, agility, goalkeeping));
                 }
 
                 for (int c = 0; c <= 3; c++) {
-                    int throwSkill = 50 + rand.nextInt(50);
-                    int speedSkill = 50 + rand.nextInt(50);
-                    int agilitySkill = 50 + rand.nextInt(50);
+                    int throwSkill = 50 + rand.nextInt(5);
+                    int speedSkill = 50 + rand.nextInt(5);
+                    int agilitySkill = 50 + rand.nextInt(5);
                     team.addCoach(new HandballCoach(NameGenerator.randomName(), throwSkill, speedSkill, agilitySkill));
                 }
 
