@@ -73,7 +73,21 @@ public class DashboardController {
             weekLabel.setText("Current Week: " + currentLeague.getCurrentWeek());
         }
 
-        standingsTable.setItems(FXCollections.observableArrayList(currentLeague.getStandings()));
+        java.util.List<com.team14.sportsmanager.core.ITeam> sortedStandings = new java.util.ArrayList<>(currentLeague.getStandings());
+        sortedStandings.sort((t1, t2) -> {
+            if (t1.getTotalPoints() != t2.getTotalPoints()) {
+                return Integer.compare(t2.getTotalPoints(), t1.getTotalPoints());
+            }
+            try {
+                int sayi1 = Integer.parseInt(t1.getTeamName().replaceAll("[^0-9]", ""));
+                int sayi2 = Integer.parseInt(t2.getTeamName().replaceAll("[^0-9]", ""));
+                return Integer.compare(sayi1, sayi2);
+            } catch (Exception e) {
+                return t1.getTeamName().compareTo(t2.getTeamName());
+            }
+        });
+
+        standingsTable.setItems(javafx.collections.FXCollections.observableArrayList(sortedStandings));
 
         ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
         if (selected != null) {

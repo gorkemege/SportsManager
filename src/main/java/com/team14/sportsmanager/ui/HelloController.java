@@ -23,6 +23,7 @@ public class HelloController {
     @FXML
     public void initialize() {
         sportSelectionBox.getItems().add("HeadBall");
+        sportSelectionBox.getItems().add("Handball");
         sportSelectionBox.getSelectionModel().selectFirst();
     }
     @FXML
