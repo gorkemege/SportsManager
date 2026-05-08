@@ -15,6 +15,7 @@ public class Team implements ITeam {
     private int totalPoints;
     private int goalsScored;
     private int goalsConceded;
+    private String activeTacticName = "Balanced";
 
     private Map<ITeam, Integer> h2hPointsMap;
 
@@ -34,8 +35,16 @@ public class Team implements ITeam {
         this.goalsConceded = goalsConceded;
 }
 
+
     public int getGoalsScored() {
         return goalsScored;
+    }
+    public void setActiveTacticName(String tacticName) {
+        this.activeTacticName = tacticName;
+    }
+
+    public String getActiveTacticName() {
+        return activeTacticName;
     }
 
     public int getGoalsConceded() {

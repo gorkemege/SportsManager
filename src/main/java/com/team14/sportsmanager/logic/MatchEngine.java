@@ -48,10 +48,28 @@ public class MatchEngine implements IMatch {
         currentPeriod++;
         matchEvents.add("Period " + currentPeriod + " has started.");
 
-        Random rand = new Random();
-        int t1Goals = rand.nextInt(5) + 2;
-        int t2Goals = rand.nextInt(5) + 2;
+      
+        double t1Power = calculateTeamPower(team1);
+        double t2Power = calculateTeamPower(team2);
 
+        Random rand = new Random();
+        int t1Goals = 0;
+        int t2Goals = 0;
+
+        for (int i = 0; i < 6; i++) {
+            double totalPower = t1Power + t2Power;
+            double chance = rand.nextDouble() * totalPower;
+
+            if (chance < t1Power) {
+                if (rand.nextDouble() < 0.35) {
+                    t1Goals++;
+                }
+            } else {
+                if (rand.nextDouble() < 0.35) {
+                    t2Goals++;
+                }
+            }
+        }
         scoreMap.put(team1, scoreMap.get(team1) + t1Goals);
         scoreMap.put(team2, scoreMap.get(team2) + t2Goals);
 
@@ -64,6 +82,37 @@ public class MatchEngine implements IMatch {
 
             finalizeMatch();
         }
+    }
+    
+    
+    private double calculateTeamPower(ITeam team) {
+        double power = 50.0; 
+
+        
+        for (IPlayer player : team.getRoster()) {
+            if (!player.isInjured()) {
+                for (int attributeValue : player.getAttributes().values()) {
+                    power += attributeValue;
+                }
+            }
+        }
+
+        
+        if (team instanceof Team) {
+            String tactic = ((Team) team).getActiveTacticName();
+            if (tactic != null) {
+                if (tactic.contains("Offensive")) {
+                    power *= 1.20; 
+                    matchEvents.add(team.getTeamName() + " is playing an Offensive style!");
+                } else if (tactic.contains("Defensive")) {
+                    power *= 0.85; 
+                    matchEvents.add(team.getTeamName() + " is parking the bus (Defensive)!");
+                } else {
+                    power *= 1.05; 
+                }
+            }
+        }
+        return power;
     }
 
     public void finalizeMatch() {
