@@ -4,34 +4,53 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<VBox alignment="CENTER" spacing="25.0" style="-fx-background-color: #2b2b2b;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.team14.sportsmanager.ui.HelloController">
+<VBox alignment="CENTER" spacing="20.0"
+      style="-fx-background-color: #0d1117;"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.team14.sportsmanager.ui.HelloController">
     <padding>
-        <Insets bottom="50.0" left="50.0" right="50.0" top="50.0" />
+        <Insets bottom="60.0" left="80.0" right="80.0" top="60.0" />
     </padding>
 
+    <!-- LOGO -->
+    <HBox alignment="CENTER" spacing="6">
+        <Label text="SPORTS"
+               style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="MGR"
+               style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #2ea043;"/>
+    </HBox>
 
-    <Label text="SPORTS MANAGER 2026" textFill="WHITE">
-        <font>
-            <Font name="System Bold" size="28.0" />
-        </font>
-    </Label>
+    <Label text="Team 14  ·  CE 216 Project"
+           style="-fx-font-size: 12px; -fx-text-fill: #8b949e; -fx-font-weight: bold;"/>
 
+    <Separator style="-fx-background-color: #21262d;" />
 
-    <Label text="Please select a sport:" textFill="#dddddd">
-        <font>
-            <Font size="16.0" />
-        </font>
-    </Label>
+    <Label text="Select a sport to manage:"
+           style="-fx-font-size: 14px; -fx-text-fill: #8b949e;"/>
 
+    <ComboBox fx:id="sportSelectionBox"
+              prefHeight="40.0" prefWidth="280.0"
+              style="-fx-font-size: 14px; -fx-background-color: #161b22; -fx-border-color: #30363d; -fx-border-radius: 6; -fx-background-radius: 6;"/>
 
-    <ComboBox fx:id="sportSelectionBox" prefHeight="40.0" prefWidth="250.0" style="-fx-font-size: 14px; -fx-background-color: #ffffff;" />
+    <Separator style="-fx-background-color: #21262d;" />
 
+    <Button fx:id="startNewGameButton"
+            mnemonicParsing="false"
+            onAction="#onStartNewGameClick"
+            prefHeight="44.0" prefWidth="280.0"
+            text="▶  Start New Game"
+            style="-fx-background-color: #238636; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 6;"/>
 
-    <Button fx:id="startNewGameButton" mnemonicParsing="false" onAction="#onStartNewGameClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 5;" text="Start New Game" />
-    <Button mnemonicParsing="false" onAction="#onLoadGameClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 5;" text="Load Game" />
+    <Button mnemonicParsing="false"
+            onAction="#onLoadGameClick"
+            prefHeight="44.0" prefWidth="280.0"
+            text="📂  Load Saved Game"
+            style="-fx-background-color: #21262d; -fx-text-fill: #c9d1d9; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 6; -fx-border-color: #30363d; -fx-border-radius: 6;"/>
 
 </VBox>
