@@ -319,12 +319,28 @@ public class DashboardController {
     }
 
     private void autoFillLineupIfNeeded() {
-        myStarters.removeIf(IPlayer::isInjured);
-        mySubs.removeIf(IPlayer::isInjured);
-        for (IPlayer p : myTeam.getRoster()) {
-            if (myStarters.size() == 7) break;
-            if (!p.isInjured() && !myStarters.contains(p) && !mySubs.contains(p))
-                myStarters.add(p);
+        java.util.List<com.team14.sportsmanager.core.IPlayer> healthyPlayers = new java.util.ArrayList<>();
+        for (com.team14.sportsmanager.core.IPlayer p : myTeam.getRoster()) {
+            if (!p.isInjured()) {
+                healthyPlayers.add(p);
+            }
+        }
+
+        healthyPlayers.sort((p1, p2) -> {
+            int total1 = p1.getAttributes().values().stream().mapToInt(Integer::intValue).sum();
+            int total2 = p2.getAttributes().values().stream().mapToInt(Integer::intValue).sum();
+            return Integer.compare(total2, total1);
+        });
+        myStarters.clear();
+        mySubs.clear();
+        for (int i = 0; i < healthyPlayers.size(); i++) {
+            if (i < 7) {
+                myStarters.add(healthyPlayers.get(i));
+            } else if (i < 10) {
+                mySubs.add(healthyPlayers.get(i));
+            } else {
+                break;
+            }
         }
     }
 
@@ -707,54 +723,96 @@ public class DashboardController {
     private void showChampionWindow() {
         java.util.List<ITeam> sorted = getSortedStandings();
         ITeam champion = sorted.get(0);
-        boolean weWon  = champion.getTeamName().equals(myTeam.getTeamName());
+        boolean weWon = champion.getTeamName().equals(myTeam.getTeamName());
+
+        int myPosition = sorted.indexOf(myTeam) + 1;
+        boolean isFired = myPosition > (sorted.size() / 2 + 3); // Eğer ligin alt yarısından da kötüysen kovulursun
 
         javafx.stage.Stage stage = new javafx.stage.Stage();
-        stage.setTitle("Season Over");
+        stage.setTitle("SEASON FINISHED - CONTRACT OFFERS");
 
         javafx.scene.layout.VBox box = new javafx.scene.layout.VBox(20);
         box.setStyle("-fx-background-color: #0d1117; -fx-padding: 40;");
         box.setAlignment(javafx.geometry.Pos.CENTER);
 
-        Label trophy = new Label(weWon ? "🏆" : "📊");
+        Label trophy = new Label(weWon ? "🏆" : (isFired ? "❌" : "📊"));
         trophy.setFont(Font.font(60));
 
-        Label headline = new Label(weWon ? "CHAMPIONS!" : "SEASON COMPLETE");
-        headline.setFont(Font.font("System", FontWeight.BOLD, 32));
-        headline.setTextFill(weWon ? Color.GOLD : Color.WHITE);
+        Label headline = new Label(weWon ? "CHAMPIONS!" : (isFired ? "YOU ARE FIRED!" : "SEASON COMPLETE"));
+        headline.setFont(Font.font("System", FontWeight.BOLD, 28));
+        headline.setTextFill(weWon ? Color.GOLD : (isFired ? Color.web("#f85149") : Color.WHITE));
 
-        Label champName = new Label(champion.getTeamName());
-        champName.setFont(Font.font("System", FontWeight.BOLD, 22));
-        champName.setTextFill(Color.web("#3fb950"));
+        Label infoLabel = new Label("You finished at position: " + myPosition);
+        infoLabel.setTextFill(Color.web("#8b949e"));
 
-        TableView<ITeam> finalTable = new TableView<>();
-        TableColumn<ITeam, Integer> pCol = new TableColumn<>("#");
-        pCol.setCellValueFactory(c -> new SimpleIntegerProperty(sorted.indexOf(c.getValue()) + 1).asObject());
-        pCol.setPrefWidth(35);
-        TableColumn<ITeam, String> nCol = new TableColumn<>("Team");
-        nCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTeamName()));
-        nCol.setPrefWidth(160);
-        TableColumn<ITeam, Integer> ptCol = new TableColumn<>("Pts");
-        ptCol.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getTotalPoints()).asObject());
-        ptCol.setPrefWidth(50);
-        TableColumn<ITeam, Integer> gdFCol = new TableColumn<>("GD");
-        gdFCol.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getGoalDifference()).asObject());
-        gdFCol.setPrefWidth(50);
-        finalTable.getColumns().addAll(pCol, nCol, ptCol, gdFCol);
-        finalTable.setItems(FXCollections.observableArrayList(sorted));
-        finalTable.setPrefHeight(220);
-        finalTable.setMaxWidth(310);
+        java.util.List<ITeam> offers = new java.util.ArrayList<>();
+        java.util.Random rand = new java.util.Random();
 
-        Button closeBtn = new Button("CLOSE");
-        closeBtn.setStyle("-fx-background-color: #21262d; -fx-text-fill: #c9d1d9; -fx-font-weight: bold; -fx-padding: 8 28; -fx-background-radius: 6; -fx-border-color: #30363d; -fx-border-radius: 6;");
-        closeBtn.setOnAction(e -> stage.close());
+        if (!isFired) {
+            offers.add(myTeam);
 
-        box.getChildren().addAll(trophy, headline, champName, finalTable, closeBtn);
-        stage.setScene(new javafx.scene.Scene(box, 420, 520));
+            if (myPosition <= 5) {
+                while (offers.size() < 3) {
+                    ITeam randomTopTeam = sorted.get(rand.nextInt(7));
+                    if (!offers.contains(randomTopTeam)) offers.add(randomTopTeam);
+                }
+            } else {
+                while (offers.size() < 3) {
+                    ITeam randomMidTeam = sorted.get(rand.nextInt(sorted.size() / 2) + (sorted.size() / 2 - 2));
+                    if (!offers.contains(randomMidTeam)) offers.add(randomMidTeam);
+                }
+            }
+        } else {
+            int bottomStart = Math.max(0, sorted.size() - 5);
+            while (offers.size() < 3) {
+                ITeam randomBottomTeam = sorted.get(rand.nextInt(sorted.size() - bottomStart) + bottomStart);
+                if (!offers.contains(randomBottomTeam) && !randomBottomTeam.getTeamName().equals(myTeam.getTeamName())) {
+                    offers.add(randomBottomTeam);
+                }
+            }
+        }
+
+        javafx.scene.layout.VBox offersBox = new javafx.scene.layout.VBox(10);
+        offersBox.setAlignment(javafx.geometry.Pos.CENTER);
+
+        Label offersTitle = new Label("CONTRACT OFFERS FOR NEXT SEASON");
+        offersTitle.setTextFill(Color.WHITE);
+        offersTitle.setFont(Font.font("System", FontWeight.BOLD, 14));
+        offersBox.getChildren().add(offersTitle);
+
+        for (ITeam offeredTeam : offers) {
+            boolean isCurrentTeam = offeredTeam.getTeamName().equals(myTeam.getTeamName());
+            Button btn = new Button(isCurrentTeam ? "Stay at " + offeredTeam.getTeamName() : "Sign with " + offeredTeam.getTeamName());
+
+            if (isCurrentTeam) {
+                btn.setStyle("-fx-background-color: #238636; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6;");
+            } else {
+                btn.setStyle("-fx-background-color: #1f6feb; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 6;");
+            }
+
+            btn.setOnAction(e -> {
+                myTeam = offeredTeam;
+
+                currentLeague.prepareNewSeason();
+                updateUI();
+                showTeamDetails(myTeam);
+                standingsTable.getSelectionModel().select(myTeam);
+
+                stage.close();
+            });
+
+            offersBox.getChildren().add(btn);
+        }
+
+        Button quitBtn = new Button("QUIT TO DESKTOP");
+        quitBtn.setStyle("-fx-background-color: #21262d; -fx-text-fill: #f85149; -fx-font-weight: bold; -fx-padding: 8 28; -fx-background-radius: 6; -fx-border-color: #30363d; -fx-border-radius: 6;");
+        quitBtn.setOnAction(e -> javafx.application.Platform.exit());
+
+        box.getChildren().addAll(trophy, headline, infoLabel, offersBox, quitBtn);
+        stage.setScene(new javafx.scene.Scene(box, 500, 600));
         stage.centerOnScreen();
         stage.showAndWait();
     }
-
 
     private String detectSportType() {
         if (myTeam != null && !myTeam.getRoster().isEmpty())

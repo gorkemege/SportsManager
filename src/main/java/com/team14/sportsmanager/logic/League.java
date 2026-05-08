@@ -117,4 +117,17 @@ public class League implements ILeague {
         }
         currentWeek++;
     }
+    public void prepareNewSeason() {
+
+        for (ITeam team : teams) {
+            if (team instanceof com.team14.sportsmanager.model.Team) {
+                ((com.team14.sportsmanager.model.Team) team).resetSeasonStats();
+            }
+        }
+
+        this.currentWeek = 0;
+
+        this.fixtures.clear();
+        generateFixtures();
+    }
 }

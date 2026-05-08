@@ -118,4 +118,18 @@ public class Team implements ITeam {
 
     @Override
     public int getLosses() { return losses; }
+    public void resetSeasonStats() {
+        this.totalPoints = 0;
+        this.wins = 0;
+        this.draws = 0;
+        this.losses = 0;
+        this.goalsScored = 0;
+        this.goalsConceded = 0;
+        this.h2hPointsMap.clear();
+        for (com.team14.sportsmanager.core.IPlayer player : this.roster) {
+            if (player.isInjured()) {
+                player.setInjury(0);
+            }
+        }
+    }
 }
