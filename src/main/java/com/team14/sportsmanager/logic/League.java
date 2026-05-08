@@ -99,6 +99,11 @@ public class League implements ILeague {
     public boolean isLeagueFinished() {
         return currentWeek >= fixtures.size();
     }
+    public void advanceWeekForLoad() {
+    if (currentWeek < fixtures.size()) {
+        currentWeek++;
+    }
+}
 
     public void advanceWeekExcluding(IMatch playerMatch) {
         if (isLeagueFinished()) return;

@@ -27,6 +27,20 @@ public class Team implements ITeam {
         this.goalsConceded = 0;
         this.h2hPointsMap = new HashMap<>();
     }
+    public Team(String teamName, int totalPoints, int goalsScored, int goalsConceded) {
+        this(teamName);
+        this.totalPoints = totalPoints;
+        this.goalsScored = goalsScored;
+        this.goalsConceded = goalsConceded;
+}
+
+    public int getGoalsScored() {
+        return goalsScored;
+    }
+
+    public int getGoalsConceded() {
+        return goalsConceded;
+    }
 
     @Override
     public String getTeamName() {
@@ -38,6 +52,7 @@ public class Team implements ITeam {
         return roster;
     }
 
+    
     @Override
     public void addMatchResult(int pointsEarned, int goalsFor, int goalsAgainst) {
         this.totalPoints += pointsEarned;
@@ -58,6 +73,7 @@ public class Team implements ITeam {
     public int getTotalPoints() {
         return totalPoints;
     }
+    
 
     @Override
     public int getGoalDifference() {

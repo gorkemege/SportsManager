@@ -11,4 +11,6 @@ public interface ITeam {
     int getGoalDifference();
     int getHeadToHeadPoints(ITeam opponent);
     void recordHeadToHead(ITeam opponent, int points);
+    int getGoalsScored();
+    int getGoalsConceded();
 }
