@@ -699,24 +699,35 @@ public class DashboardController {
         for (IPlayer p : myStarters) if (p.isInjured()) injured.add(p);
         if (injured.isEmpty()) return true;
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Injury Alert");
-        alert.setHeaderText(injured.size() + " starter(s) injured!");
-        alert.setContentText("Auto-replace them or manage manually?");
-        ButtonType auto    = new ButtonType("Auto-Replace");
-        ButtonType manual  = new ButtonType("Locker Room");
-        alert.getButtonTypes().setAll(auto, manual);
-
-        java.util.Optional<ButtonType> r = alert.showAndWait();
-        if (r.isPresent() && r.get() == auto) {
-            autoFillLineupIfNeeded();
-            updateUI();
-            return true;
-        } else if (r.isPresent() && r.get() == manual) {
-            onLockerRoomClick();
-            return false;
+        java.util.List<IPlayer> toAdd = new java.util.ArrayList<>();
+        java.util.Iterator<IPlayer> it = myStarters.iterator();
+        while (it.hasNext()) {
+            IPlayer p = it.next();
+            if (p.isInjured()) {
+                it.remove();
+                IPlayer best = null;
+                int maxStats = -1;
+                for (IPlayer sub : mySubs) {
+                    if (!sub.isInjured()) {
+                        int total = sub.getAttributes().values().stream().mapToInt(Integer::intValue).sum();
+                        if (total > maxStats) { maxStats = total; best = sub; }
+                    }
+                }
+                if (best != null) { mySubs.remove(best); toAdd.add(best); }
+                else {
+                    for (IPlayer r : myTeam.getRoster()) {
+                        if (!r.isInjured() && !myStarters.contains(r) && !mySubs.contains(r)) {
+                            int total = r.getAttributes().values().stream().mapToInt(Integer::intValue).sum();
+                            if (total > maxStats) { maxStats = total; best = r; }
+                        }
+                    }
+                    if (best != null) toAdd.add(best);
+                }
+            }
         }
-        return false;
+        myStarters.addAll(toAdd);
+        updateUI();
+        return true;
     }
 
 
