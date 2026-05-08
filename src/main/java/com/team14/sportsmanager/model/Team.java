@@ -13,6 +13,9 @@ public class Team implements ITeam {
     private List<IPlayer> roster;
     private List<ICoach> coaches;
     private int totalPoints;
+    private int wins;
+    private int draws;
+    private int losses;
     private int goalsScored;
     private int goalsConceded;
     private String activeTacticName = "Balanced";
@@ -67,6 +70,9 @@ public class Team implements ITeam {
         this.totalPoints += pointsEarned;
         this.goalsScored += goalsFor;
         this.goalsConceded += goalsAgainst;
+        if (pointsEarned == 2) this.wins++;
+        else if (pointsEarned == 1) this.draws++;
+        else this.losses++;
     }
 
     @Override
@@ -103,4 +109,13 @@ public class Team implements ITeam {
     public void addPlayer(IPlayer player) {
         this.roster.add(player);
     }
+
+    @Override
+    public int getWins() { return wins; }
+
+    @Override
+    public int getDraws() { return draws; }
+
+    @Override
+    public int getLosses() { return losses; }
 }

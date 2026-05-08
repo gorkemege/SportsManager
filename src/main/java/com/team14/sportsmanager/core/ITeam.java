@@ -13,4 +13,7 @@ public interface ITeam {
     void recordHeadToHead(ITeam opponent, int points);
     int getGoalsScored();
     int getGoalsConceded();
+    int getWins();
+    int getDraws();
+    int getLosses();
 }

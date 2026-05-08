@@ -2,52 +2,115 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
-<BorderPane style="-fx-background-color: #1e1e1e;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.team14.sportsmanager.ui.DashboardController">
+
+<BorderPane style="-fx-background-color: #0d1117;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.team14.sportsmanager.ui.DashboardController">
+
+    <!-- TOP BAR -->
     <top>
-        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20;">
-            <Label text="LEAGUE DASHBOARD" textFill="WHITE" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-            <Label fx:id="weekLabel" text="Current Week: 0" textFill="#aaaaaa" style="-fx-font-size: 16px;"/>
-        </VBox>
+        <HBox alignment="CENTER_LEFT" spacing="16"
+              style="-fx-background-color: #161b22; -fx-padding: 10 20 10 20; -fx-border-color: #21262d; -fx-border-width: 0 0 1 0;">
+            <Label text="SPORTS" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Label text="MGR" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2ea043;"/>
+            <Label fx:id="weekLabel" text="Week 0 / 0"
+                   style="-fx-background-color: #21262d; -fx-border-color: #30363d; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 4 12; -fx-font-size: 12px; -fx-text-fill: #f0f6fc;"/>
+            <Label fx:id="managerLabel" text="Managing: —"
+                   style="-fx-background-color: #21262d; -fx-border-color: #30363d; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 4 12; -fx-font-size: 12px; -fx-text-fill: #f0f6fc;"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Button text="Simulate Weeks" onAction="#onSimulateWeeksClick"
+                    style="-fx-background-color: #9e6a03; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 6; -fx-padding: 6 14;"/>
+            <Button text="Save" onAction="#onSaveGameClick"
+                    style="-fx-background-color: #21262d; -fx-text-fill: #c9d1d9; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 6; -fx-padding: 6 14; -fx-border-color: #30363d; -fx-border-radius: 6;"/>
+            <Button text="Load" onAction="#onLoadGameClick"
+                    style="-fx-background-color: #21262d; -fx-text-fill: #c9d1d9; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-radius: 6; -fx-padding: 6 14; -fx-border-color: #30363d; -fx-border-radius: 6;"/>
+        </HBox>
     </top>
+
+    <!-- CENTER: 3 COLUMNS -->
     <center>
-        <HBox spacing="20" style="-fx-padding: 20;">
+        <HBox spacing="10" style="-fx-padding: 10;">
 
-            <VBox HBox.hgrow="ALWAYS" spacing="10" prefWidth="350">
-                <Label text="Standings" textFill="WHITE" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                <TableView fx:id="standingsTable" VBox.vgrow="ALWAYS" prefHeight="350">
-                    <columns>
-                        <TableColumn fx:id="teamNameCol" text="Team Name" prefWidth="250"/>
-                        <TableColumn fx:id="pointsCol" text="Points" prefWidth="80"/>
-                    </columns>
-                </TableView>
+            <!-- LEFT: STANDINGS + FIXTURES -->
+            <VBox spacing="10" prefWidth="320" HBox.hgrow="NEVER">
 
-                <Label text="Weekly Fixtures" textFill="#FF9800" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10 0 0 0;"/>
-                <ListView fx:id="fixtureList" VBox.vgrow="ALWAYS" prefHeight="200" style="-fx-control-inner-background: #2b2b2b; -fx-text-fill: white;"/>
+                <!-- Standings -->
+                <VBox VBox.vgrow="ALWAYS" style="-fx-background-color: #161b22; -fx-border-color: #21262d; -fx-border-radius: 8; -fx-background-radius: 8;">
+                    <Label text="LEAGUE STANDINGS"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #8b949e; -fx-padding: 10 14 10 14; -fx-border-color: #21262d; -fx-border-width: 0 0 1 0;"/>
+                    <TableView fx:id="standingsTable" VBox.vgrow="ALWAYS"
+                               style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                        <columns>
+                            <TableColumn fx:id="posCol"      text="#"    prefWidth="28"/>
+                            <TableColumn fx:id="teamNameCol" text="Team" prefWidth="110"/>
+                            <TableColumn fx:id="winsCol"     text="W"    prefWidth="30"/>
+                            <TableColumn fx:id="drawsCol"    text="D"    prefWidth="30"/>
+                            <TableColumn fx:id="lossesCol"   text="L"    prefWidth="30"/>
+                            <TableColumn fx:id="gdCol"       text="GD"   prefWidth="38"/>
+                            <TableColumn fx:id="pointsCol"   text="Pts"  prefWidth="36"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+
+                <!-- Fixtures -->
+                <VBox prefHeight="185" style="-fx-background-color: #161b22; -fx-border-color: #21262d; -fx-border-radius: 8; -fx-background-radius: 8;">
+                    <Label fx:id="fixtureHeader" text="WEEKLY FIXTURES"
+                           style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #8b949e; -fx-padding: 10 14 10 14; -fx-border-color: #21262d; -fx-border-width: 0 0 1 0;"/>
+                    <ListView fx:id="fixtureList" VBox.vgrow="ALWAYS"
+                              style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: transparent;"/>
+                </VBox>
+
             </VBox>
 
-            <VBox HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: #2b2b2b; -fx-padding: 15; -fx-background-radius: 5;" prefWidth="450">
-                <Label fx:id="selectedTeamNameLabel" text="Select a team to see details" textFill="#4CAF50" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                <Label text="Players (Roster)" textFill="#dddddd" style="-fx-font-size: 16px;"/>
-                <TableView fx:id="playersTable" VBox.vgrow="ALWAYS">
+            <!-- CENTER: TEAM DETAILS -->
+            <VBox HBox.hgrow="ALWAYS" spacing="0"
+                  style="-fx-background-color: #161b22; -fx-border-color: #21262d; -fx-border-radius: 8; -fx-background-radius: 8;">
+                <Label fx:id="selectedTeamNameLabel" text="Select a team from standings"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6edf3; -fx-padding: 10 14 10 14; -fx-border-color: #21262d; -fx-border-width: 0 0 1 0;"/>
+                <Label text="PLAYERS"
+                       style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #8b949e; -fx-padding: 8 14 4 14;"/>
+                <TableView fx:id="playersTable" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: transparent; -fx-border-color: transparent;">
                     <columns>
-                        <TableColumn fx:id="playerNameCol" text="Player Name" prefWidth="180"/>
-                        <TableColumn fx:id="playerAttrCol" text="Attributes" prefWidth="250"/>
+                        <TableColumn fx:id="playerNameCol"   text="Player"     prefWidth="160"/>
+                        <TableColumn fx:id="playerAttrCol"   text="Attributes" prefWidth="280"/>
+                        <TableColumn fx:id="playerTotalCol"  text="Total"      prefWidth="60"/>
+                        <TableColumn fx:id="playerStatusCol" text="Status"     prefWidth="90"/>
                     </columns>
                 </TableView>
-                <Label text="Coaches" textFill="#dddddd" style="-fx-font-size: 16px;"/>
-                <ListView fx:id="coachesList" prefHeight="120"/>
+                <Label text="COACHES"
+                       style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #8b949e; -fx-padding: 8 14 4 14; -fx-border-color: #21262d; -fx-border-width: 1 0 0 0;"/>
+                <ListView fx:id="coachesList" prefHeight="100"
+                          style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: transparent;"/>
+            </VBox>
+
+            <!-- RIGHT: MY SQUAD -->
+            <VBox prefWidth="240" HBox.hgrow="NEVER" spacing="0"
+                  style="-fx-background-color: #161b22; -fx-border-color: #21262d; -fx-border-radius: 8; -fx-background-radius: 8;">
+                <Label text="MY SQUAD"
+                       style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #8b949e; -fx-padding: 10 14 10 14; -fx-border-color: #21262d; -fx-border-width: 0 0 1 0;"/>
+                <Label fx:id="squadStatusLabel" text="Starters: 0/7  |  Subs: 0/3"
+                       style="-fx-font-size: 11px; -fx-text-fill: #8b949e; -fx-padding: 6 14;"/>
+                <ListView fx:id="squadList" VBox.vgrow="ALWAYS"
+                          style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: transparent;"/>
             </VBox>
 
         </HBox>
     </center>
+
+    <!-- BOTTOM BAR -->
     <bottom>
-        <VBox alignment="CENTER" spacing="15" style="-fx-padding: 20;">
-            <Button text="Locker Room &amp; Tactics" onAction="#onLockerRoomClick" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
-            <HBox alignment="CENTER" spacing="10">
-                <Button text="Next Week" onAction="#onNextWeekClick" prefHeight="45.0" prefWidth="120.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
-                <Button text="Multi Weeks" onAction="#onSimulateWeeksClick" prefHeight="45.0" prefWidth="120.0" style="-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
-            </HBox>
-            <Button text="Save Game" onAction="#onSaveGameClick" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
-        </VBox>
+        <HBox alignment="CENTER_RIGHT" spacing="10"
+              style="-fx-background-color: #161b22; -fx-padding: 10 20; -fx-border-color: #21262d; -fx-border-width: 1 0 0 0;">
+            <Label fx:id="tacticLabel" text="Tactic: —"
+                   style="-fx-background-color: #21262d; -fx-border-color: #30363d; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 5 12; -fx-font-size: 11px; -fx-text-fill: #d29922;"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Button text="Locker Room" onAction="#onLockerRoomClick"
+                    style="-fx-background-color: #9e6a03; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 6; -fx-padding: 8 20;"/>
+            <Button text="Play Next Week" onAction="#onNextWeekClick"
+                    style="-fx-background-color: #1f6feb; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 6; -fx-padding: 8 20;"/>
+        </HBox>
     </bottom>
+
 </BorderPane>
