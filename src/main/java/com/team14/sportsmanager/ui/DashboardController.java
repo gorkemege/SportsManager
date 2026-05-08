@@ -252,42 +252,83 @@ public class DashboardController {
 
     private void openLiveMatchScreen(com.team14.sportsmanager.core.IMatch matchObj, com.team14.sportsmanager.core.ITeam opponent) {
         com.team14.sportsmanager.logic.MatchEngine actualMatch = (com.team14.sportsmanager.logic.MatchEngine) matchObj;
-        try {
-            actualMatch.setLineup(myTeam, myStarters);
-        } catch (IllegalArgumentException ex) {
-            weekLabel.setText("ERROR: Invalid lineup. Please update your starters in the Locker Room.");
-            return;
-        }
+        actualMatch.setLineup(myTeam, myStarters);
         javafx.stage.Stage matchStage = new javafx.stage.Stage();
         matchStage.setTitle("LIVE MATCH");
         final int[] currentQuarter = {1};
+
         javafx.scene.layout.VBox mainBox = new javafx.scene.layout.VBox(30);
         mainBox.setStyle("-fx-background-color: #1a1a1a; -fx-padding: 40;");
         mainBox.setAlignment(javafx.geometry.Pos.CENTER);
+
         javafx.scene.control.Label quarterLabel = new javafx.scene.control.Label("QUARTER 1");
         quarterLabel.setTextFill(javafx.scene.paint.Color.ORANGE);
         quarterLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 24));
+
         javafx.scene.layout.HBox scoreBox = new javafx.scene.layout.HBox(40);
         scoreBox.setAlignment(javafx.geometry.Pos.CENTER);
+
         javafx.scene.control.Label myTeamLabel = new javafx.scene.control.Label(myTeam.getTeamName() + "\n0");
         myTeamLabel.setTextFill(javafx.scene.paint.Color.WHITE);
         myTeamLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 32));
         myTeamLabel.setAlignment(javafx.geometry.Pos.CENTER);
         myTeamLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
         javafx.scene.control.Label vsLabel = new javafx.scene.control.Label("-");
         vsLabel.setTextFill(javafx.scene.paint.Color.GRAY);
         vsLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 36));
+
         javafx.scene.control.Label oppTeamLabel = new javafx.scene.control.Label(opponent.getTeamName() + "\n0");
         oppTeamLabel.setTextFill(javafx.scene.paint.Color.WHITE);
         oppTeamLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 32));
         oppTeamLabel.setAlignment(javafx.geometry.Pos.CENTER);
         oppTeamLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
         scoreBox.getChildren().addAll(myTeamLabel, vsLabel, oppTeamLabel);
+
+        javafx.scene.control.ListView<String> commentatorBox = new javafx.scene.control.ListView<>();
+        commentatorBox.setPrefHeight(180);
+        commentatorBox.setStyle("-fx-control-inner-background: #2b2b2b; -fx-background-color: #2b2b2b;");
+
+        commentatorBox.setCellFactory(lv -> new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("-fx-background-color: transparent;");
+                } else {
+                    setText(item);
+                    String checkItem = item.toLowerCase(java.util.Locale.ENGLISH);
+
+                    if (checkItem.contains("period")) {
+                        setStyle("-fx-text-fill: #FF9800; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
+                    } else if (checkItem.contains("⚽")) {
+                        if (item.contains(myTeam.getTeamName())) {
+                            setStyle("-fx-text-fill: #4CAF50; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
+                        } else {
+                            setStyle("-fx-text-fill: #F44336; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
+                        }
+                    } else if (checkItem.contains("🚑")) {
+                        setStyle("-fx-text-fill: #FF5252; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
+                    } else if (checkItem.contains("🔄")) {
+                        setStyle("-fx-text-fill: #03A9F4; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
+                    } else if (checkItem.contains("finished")) {
+                        setStyle("-fx-text-fill: #FFD700; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
+                    } else {
+                        setStyle("-fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
+                    }
+                }
+            }
+        });
+
         javafx.scene.control.Button playQuarterBtn = new javafx.scene.control.Button("PLAY QUARTER 1");
         playQuarterBtn.setStyle("-fx-background-color: #e50914; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18px; -fx-padding: 10 20;");
+
         javafx.scene.control.Button subsBtn = new javafx.scene.control.Button("Make Substitutions / Tactics");
         subsBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
         subsBtn.setOnAction(e -> openSubstitutionScreen(actualMatch));
+
         playQuarterBtn.setOnAction(e -> {
             if (!actualMatch.isMatchFinished()) {
                 actualMatch.simulatePeriod();
@@ -295,6 +336,34 @@ public class DashboardController {
                 int oppRealScore = actualMatch.getCurrentScore().get(opponent);
                 myTeamLabel.setText(myTeam.getTeamName() + "\n" + myRealScore);
                 oppTeamLabel.setText(opponent.getTeamName() + "\n" + oppRealScore);
+
+                commentatorBox.getItems().clear();
+
+                java.util.List<String> allEvents = actualMatch.getMatchEvents();
+                int lastPeriodIndex = 0;
+
+                for (int i = allEvents.size() - 1; i >= 0; i--) {
+                    if (allEvents.get(i).startsWith("Period")) {
+                        lastPeriodIndex = i;
+                        break;
+                    }
+                }
+
+                for (int i = lastPeriodIndex; i < allEvents.size(); i++) {
+                    String event = allEvents.get(i);
+                    if (event.startsWith("Period")) {
+                        commentatorBox.getItems().add("♦ " + event.toUpperCase(java.util.Locale.ENGLISH) + " ♦");
+                    } else if (event.contains("scored")) {
+                        commentatorBox.getItems().add("⚽ " + event);
+                    } else if (event.contains("INJURY")) {
+                        commentatorBox.getItems().add("🚑 " + event);
+                    } else if (event.contains("Substitution")) {
+                        commentatorBox.getItems().add("🔄 " + event);
+                    } else {
+                        commentatorBox.getItems().add("» " + event);
+                    }
+                }
+
                 currentQuarter[0]++;
                 if (!actualMatch.isMatchFinished()) {
                     quarterLabel.setText("QUARTER " + currentQuarter[0]);
@@ -330,8 +399,9 @@ public class DashboardController {
                 }
             }
         });
-        mainBox.getChildren().addAll(quarterLabel, scoreBox, playQuarterBtn, subsBtn);
-        javafx.scene.Scene matchScene = new javafx.scene.Scene(mainBox, 700, 500);
+
+        mainBox.getChildren().addAll(quarterLabel, scoreBox, commentatorBox, playQuarterBtn, subsBtn);
+        javafx.scene.Scene matchScene = new javafx.scene.Scene(mainBox, 750, 650);
         matchStage.setScene(matchScene);
         matchStage.centerOnScreen();
         matchStage.showAndWait();
