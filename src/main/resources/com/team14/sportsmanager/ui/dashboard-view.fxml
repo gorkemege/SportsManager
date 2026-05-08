@@ -43,7 +43,10 @@
     <bottom>
         <VBox alignment="CENTER" spacing="15" style="-fx-padding: 20;">
             <Button text="Locker Room &amp; Tactics" onAction="#onLockerRoomClick" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
-            <Button text="Simulate Next Week" onAction="#onNextWeekClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
+            <HBox alignment="CENTER" spacing="10">
+                <Button text="Next Week" onAction="#onNextWeekClick" prefHeight="45.0" prefWidth="120.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
+                <Button text="Multi Weeks" onAction="#onSimulateWeeksClick" prefHeight="45.0" prefWidth="120.0" style="-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
+            </HBox>
             <Button text="Save Game" onAction="#onSaveGameClick" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 5;"/>
         </VBox>
     </bottom>

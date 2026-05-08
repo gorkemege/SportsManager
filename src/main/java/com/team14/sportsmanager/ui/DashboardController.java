@@ -206,24 +206,23 @@ public class DashboardController {
     @FXML
     protected void onNextWeekClick() {
         if (currentLeague.isLeagueFinished()) {
-            weekLabel.setText("League is Finished!");
+            showChampionWindow();
             return;
         }
 
-        removeInjuredPlayersFromSelection();
+        if (!handleInjuredStarters()) return;
 
         if (myStarters.size() != 7) {
-            weekLabel.setText("ERROR: You must set exactly 7 starters in the Locker Room first!");
+            weekLabel.setText("ERROR: Squad incomplete! Fix your roster.");
             return;
         }
 
         com.team14.sportsmanager.core.IMatch myMatch = null;
         com.team14.sportsmanager.core.ITeam opponent = null;
-
         java.util.List<com.team14.sportsmanager.core.IMatch> weekMatches = currentLeague.getFixtures().get(currentLeague.getCurrentWeek());
 
-        for (com.team14.sportsmanager.core.IMatch match : weekMatches) {
-            com.team14.sportsmanager.logic.MatchEngine engine = (com.team14.sportsmanager.logic.MatchEngine) match;
+        for (com.team14.sportsmanager.core.IMatch m : weekMatches) {
+            com.team14.sportsmanager.logic.MatchEngine engine = (com.team14.sportsmanager.logic.MatchEngine) m;
             if (engine.getTeam1().getTeamName().equals(myTeam.getTeamName())) {
                 myMatch = engine;
                 opponent = engine.getTeam2();
@@ -237,22 +236,130 @@ public class DashboardController {
 
         if (myMatch == null || opponent == null) {
             currentLeague.advanceWeek();
-            for (com.team14.sportsmanager.core.ITeam team : currentLeague.getStandings()) {
-                for (com.team14.sportsmanager.core.ICoach coach : team.getCoachingStaff()) {
-                    for (com.team14.sportsmanager.core.IPlayer player : team.getRoster()) {
-                        coach.train(player);
-                    }
-                }
-            }
             updateUI();
         } else {
             openLiveMatchScreen(myMatch, opponent);
         }
     }
+    @FXML
+    protected void onSimulateWeeksClick() {
+        if (currentLeague.isLeagueFinished()) {
+            showChampionWindow();
+            return;
+        }
 
+        int totalWeeks = currentLeague.getFixtures().size();
+        int currentWeek = currentLeague.getCurrentWeek();
+        int remainingWeeks = totalWeeks - currentWeek;
+
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog("1");
+        dialog.setTitle("Time Machine");
+        dialog.setHeaderText("Fast simulation (Silent Mode).\nRemaining weeks in league: " + remainingWeeks);
+        dialog.setContentText("How many weeks do you want to simulate?");
+
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            try {
+                int weeksToSimulate = Integer.parseInt(result.get());
+
+                if (weeksToSimulate > remainingWeeks) {
+                    javafx.scene.control.Alert errorAlert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+                    errorAlert.setTitle("Invalid Range");
+                    errorAlert.setHeaderText("Simulation Limit Exceeded");
+                    errorAlert.setContentText("The league has only " + remainingWeeks + " weeks left.");
+                    errorAlert.showAndWait();
+                    return;
+                }
+
+                for (int i = 0; i < weeksToSimulate; i++) {
+                    if (currentLeague.isLeagueFinished()) break;
+
+                    java.util.Iterator<com.team14.sportsmanager.core.IPlayer> it = myStarters.iterator();
+                    java.util.List<com.team14.sportsmanager.core.IPlayer> toAdd = new java.util.ArrayList<>();
+                    while (it.hasNext()) {
+                        com.team14.sportsmanager.core.IPlayer p = it.next();
+                        if (p.isInjured()) {
+                            it.remove();
+                            com.team14.sportsmanager.core.IPlayer best = null;
+                            int maxStats = -1;
+
+                            for (com.team14.sportsmanager.core.IPlayer sub : mySubs) {
+                                if (!sub.isInjured()) {
+                                    int total = 0;
+                                    for (int s : sub.getAttributes().values()) total += s;
+                                    if (total > maxStats) { maxStats = total; best = sub; }
+                                }
+                            }
+
+                            if (best != null) {
+                                mySubs.remove(best);
+                            } else {
+                                for (com.team14.sportsmanager.core.IPlayer r : myTeam.getRoster()) {
+                                    if (!r.isInjured() && !myStarters.contains(r) && !mySubs.contains(r) && !toAdd.contains(r)) {
+                                        int total = 0;
+                                        for (int s : r.getAttributes().values()) total += s;
+                                        if (total > maxStats) { maxStats = total; best = r; }
+                                    }
+                                }
+                            }
+                            if (best != null) toAdd.add(best);
+                        }
+                    }
+                    myStarters.addAll(toAdd);
+
+                    if (myStarters.size() < 7) {
+                        for (com.team14.sportsmanager.core.IPlayer r : myTeam.getRoster()) {
+                            if (myStarters.size() == 7) break;
+                            if (!r.isInjured() && !myStarters.contains(r) && !mySubs.contains(r)) {
+                                myStarters.add(r);
+                            }
+                        }
+                    }
+
+                    if (myStarters.size() != 7) {
+                        weekLabel.setText("Simulation Stopped! Not enough healthy players.");
+                        break;
+                    }
+
+                    com.team14.sportsmanager.core.IMatch myMatch = null;
+                    java.util.List<com.team14.sportsmanager.core.IMatch> weekMatches = currentLeague.getFixtures().get(currentLeague.getCurrentWeek());
+
+                    for (com.team14.sportsmanager.core.IMatch m : weekMatches) {
+                        com.team14.sportsmanager.logic.MatchEngine engine = (com.team14.sportsmanager.logic.MatchEngine) m;
+                        if (engine.getTeam1().getTeamName().equals(myTeam.getTeamName()) || engine.getTeam2().getTeamName().equals(myTeam.getTeamName())) {
+                            myMatch = engine;
+                            break;
+                        }
+                    }
+
+                    if (myMatch != null) {
+                        com.team14.sportsmanager.logic.MatchEngine actualMatch = (com.team14.sportsmanager.logic.MatchEngine) myMatch;
+                        actualMatch.setLineup(myTeam, new java.util.ArrayList<>(myStarters));
+                        actualMatch.simulateMatch();
+                        currentLeague.advanceWeekExcluding(actualMatch);
+                    } else {
+                        currentLeague.advanceWeek();
+                    }
+
+                    for (com.team14.sportsmanager.core.ITeam team : currentLeague.getStandings()) {
+                        for (com.team14.sportsmanager.core.ICoach coach : team.getCoachingStaff()) {
+                            for (com.team14.sportsmanager.core.IPlayer player : team.getRoster()) { coach.train(player); }
+                        }
+                    }
+                }
+
+                updateUI();
+                if (currentLeague.isLeagueFinished()) showChampionWindow();
+
+            } catch (NumberFormatException e) {
+                weekLabel.setText("ERROR: Please enter a valid number.");
+            }
+        }
+    }
     private void openLiveMatchScreen(com.team14.sportsmanager.core.IMatch matchObj, com.team14.sportsmanager.core.ITeam opponent) {
         com.team14.sportsmanager.logic.MatchEngine actualMatch = (com.team14.sportsmanager.logic.MatchEngine) matchObj;
-        actualMatch.setLineup(myTeam, myStarters);
+        actualMatch.setLineup(myTeam, new java.util.ArrayList<>(myStarters));
+
         javafx.stage.Stage matchStage = new javafx.stage.Stage();
         matchStage.setTitle("LIVE MATCH");
         final int[] currentQuarter = {1};
@@ -309,7 +416,7 @@ public class DashboardController {
                         } else {
                             setStyle("-fx-text-fill: #F44336; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
                         }
-                    } else if (checkItem.contains("🚑")) {
+                    } else if (checkItem.contains("🚑") || checkItem.contains("injury") || checkItem.contains("injured")) {
                         setStyle("-fx-text-fill: #FF5252; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
                     } else if (checkItem.contains("🔄")) {
                         setStyle("-fx-text-fill: #03A9F4; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-color: transparent;");
@@ -355,8 +462,12 @@ public class DashboardController {
                         commentatorBox.getItems().add("♦ " + event.toUpperCase(java.util.Locale.ENGLISH) + " ♦");
                     } else if (event.contains("scored")) {
                         commentatorBox.getItems().add("⚽ " + event);
-                    } else if (event.contains("INJURY")) {
-                        commentatorBox.getItems().add("🚑 " + event);
+                    } else if (event.toLowerCase().contains("injury") || event.toLowerCase().contains("injured")) {
+                        boolean isMyPlayer = false;
+                        for(com.team14.sportsmanager.core.IPlayer p : myTeam.getRoster()) {
+                            if(event.contains(p.getName())) { isMyPlayer = true; break; }
+                        }
+                        if(isMyPlayer) commentatorBox.getItems().add("🚑 " + event);
                     } else if (event.contains("Substitution")) {
                         commentatorBox.getItems().add("🔄 " + event);
                     } else {
@@ -384,6 +495,15 @@ public class DashboardController {
                 }
             } else {
                 matchStage.close();
+
+                boolean hasInjured = false;
+                for (com.team14.sportsmanager.core.IPlayer p : myStarters) {
+                    if (p.isInjured()) {
+                        hasInjured = true;
+                        break;
+                    }
+                }
+
                 currentLeague.advanceWeekExcluding(actualMatch);
                 for (com.team14.sportsmanager.core.ITeam team : currentLeague.getStandings()) {
                     for (com.team14.sportsmanager.core.ICoach coach : team.getCoachingStaff()) {
@@ -393,9 +513,16 @@ public class DashboardController {
                     }
                 }
                 updateUI();
+
                 com.team14.sportsmanager.core.ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
                 if (selected != null) {
                     showTeamDetails(selected);
+                }
+
+                if (hasInjured) {
+                    javafx.application.Platform.runLater(() -> {
+                        handleInjuredStarters();
+                    });
                 }
             }
         });
@@ -643,5 +770,112 @@ public class DashboardController {
         prepStage.setScene(prepScene);
         prepStage.centerOnScreen();
         prepStage.showAndWait();
+    }
+    private boolean handleInjuredStarters() {
+        java.util.List<com.team14.sportsmanager.core.IPlayer> injuredInLineup = new java.util.ArrayList<>();
+        for (com.team14.sportsmanager.core.IPlayer p : myStarters) {
+            if (p.isInjured()) {
+                injuredInLineup.add(p);
+            }
+        }
+
+        if (injuredInLineup.isEmpty()) {
+            return true;
+        }
+
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Injury Alert");
+        alert.setHeaderText("Injured players detected in your starting lineup!");
+        alert.setContentText("Would you like the assistant to auto-replace them, or go to Tactics to manage it yourself?");
+
+        javafx.scene.control.ButtonType btnAuto = new javafx.scene.control.ButtonType("Auto-Replace");
+        javafx.scene.control.ButtonType btnTactics = new javafx.scene.control.ButtonType("Go to Tactics");
+        alert.getButtonTypes().setAll(btnAuto, btnTactics);
+
+        java.util.Optional<javafx.scene.control.ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent() && result.get() == btnAuto) {
+            java.util.Iterator<com.team14.sportsmanager.core.IPlayer> it = myStarters.iterator();
+            java.util.List<com.team14.sportsmanager.core.IPlayer> toAdd = new java.util.ArrayList<>();
+            while (it.hasNext()) {
+                com.team14.sportsmanager.core.IPlayer p = it.next();
+                if (p.isInjured()) {
+                    it.remove();
+                    com.team14.sportsmanager.core.IPlayer best = null;
+                    int maxStats = -1;
+                    for (com.team14.sportsmanager.core.IPlayer sub : mySubs) {
+                        if (!sub.isInjured()) {
+                            int total = 0;
+                            for (int s : sub.getAttributes().values()) total += s;
+                            if (total > maxStats) { maxStats = total; best = sub; }
+                        }
+                    }
+                    if (best != null) { mySubs.remove(best); }
+                    else {
+                        for (com.team14.sportsmanager.core.IPlayer r : myTeam.getRoster()) {
+                            if (!r.isInjured() && !myStarters.contains(r) && !mySubs.contains(r)) {
+                                int total = 0;
+                                for (int s : r.getAttributes().values()) total += s;
+                                if (total > maxStats) { maxStats = total; best = r; }
+                            }
+                        }
+                    }
+                    if (best != null) toAdd.add(best);
+                }
+            }
+            myStarters.addAll(toAdd);
+            updateUI();
+            return true;
+        } else if (result.isPresent() && result.get() == btnTactics) {
+            onLockerRoomClick();
+            return false;
+        }
+        return false;
+    }
+    private void showChampionWindow() {
+        java.util.List<com.team14.sportsmanager.core.ITeam> sortedStandings = new java.util.ArrayList<>(currentLeague.getStandings());
+        sortedStandings.sort((t1, t2) -> Integer.compare(t2.getTotalPoints(), t1.getTotalPoints()));
+        com.team14.sportsmanager.core.ITeam champion = sortedStandings.get(0);
+
+        javafx.stage.Stage champStage = new javafx.stage.Stage();
+        champStage.setTitle("CHAMPIONSHIP CEREMONY");
+
+        javafx.scene.layout.VBox box = new javafx.scene.layout.VBox(20);
+        box.setStyle("-fx-background-color: #FFD700; -fx-padding: 50; -fx-border-color: #B8860B; -fx-border-width: 10;");
+        box.setAlignment(javafx.geometry.Pos.CENTER);
+
+        javafx.scene.control.Label title = new javafx.scene.control.Label("🏆 LEAGUE CHAMPION 🏆");
+        title.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 36));
+        title.setTextFill(javafx.scene.paint.Color.BLACK);
+
+        javafx.scene.control.Label champName = new javafx.scene.control.Label(champion.getTeamName());
+        champName.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 48));
+        champName.setTextFill(javafx.scene.paint.Color.web("#8B0000"));
+
+        javafx.scene.control.Label pointsInfo = new javafx.scene.control.Label("Total Points: " + champion.getTotalPoints());
+        pointsInfo.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 24));
+        pointsInfo.setTextFill(javafx.scene.paint.Color.BLACK);
+
+        String message;
+        if (champion.getTeamName().equals(myTeam.getTeamName())) {
+            message = "CONGRATULATIONS! YOU WON THE LEAGUE!";
+        } else {
+            message = "BETTER LUCK NEXT SEASON!";
+        }
+
+        javafx.scene.control.Label msgLabel = new javafx.scene.control.Label(message);
+        msgLabel.setFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 20));
+        msgLabel.setTextFill(javafx.scene.paint.Color.BLACK);
+
+        javafx.scene.control.Button closeBtn = new javafx.scene.control.Button("CLOSE SEASON");
+        closeBtn.setStyle("-fx-background-color: #1a1a1a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;");
+        closeBtn.setOnAction(e -> champStage.close());
+
+        box.getChildren().addAll(title, champName, pointsInfo, msgLabel, closeBtn);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(box, 600, 400);
+        champStage.setScene(scene);
+        champStage.centerOnScreen();
+        champStage.showAndWait();
     }
 }
