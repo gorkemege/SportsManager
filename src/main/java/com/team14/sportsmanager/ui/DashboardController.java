@@ -671,22 +671,23 @@ public class DashboardController {
 
     @FXML
     protected void onLoadGameClick() {
-        League loaded = SaveManager.loadGame();
+        String sport = detectSportType();
+        League loaded = SaveManager.loadGame(sport);
         if (loaded == null) { weekLabel.setText("No save found."); return; }
         this.currentLeague = loaded;
 
-        String savedName = SaveManager.loadManagerTeamName();
+        String savedName = SaveManager.loadManagerTeamName(sport);
         for (ITeam t : loaded.getStandings())
             if (t.getTeamName().equals(savedName)) { myTeam = t; break; }
 
-        String savedTactic = SaveManager.loadManagerTactic();
+        String savedTactic = SaveManager.loadManagerTactic(sport);
         if (myTeam instanceof Team && savedTactic != null)
             ((Team) myTeam).setActiveTacticName(savedTactic);
 
         myStarters.clear(); mySubs.clear();
         restoreSavedLineup(
-                SaveManager.loadLineupPlayerNames("starter"),
-                SaveManager.loadLineupPlayerNames("substitute"));
+                SaveManager.loadLineupPlayerNames("starter", sport),
+                SaveManager.loadLineupPlayerNames("substitute", sport));
 
         updateUI();
         showTeamDetails(myTeam);

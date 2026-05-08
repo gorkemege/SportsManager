@@ -90,13 +90,14 @@ public class HelloController {
 
     @FXML
     protected void onLoadGameClick(ActionEvent event) {
-        League loadedLeague = SaveManager.loadGame();
+        String selectedSport = sportSelectionBox.getValue();
+        League loadedLeague = SaveManager.loadGame(selectedSport);
 
         if (loadedLeague == null || loadedLeague.getStandings().isEmpty()) {
             return;
         }
 
-        String managerTeamName = SaveManager.loadManagerTeamName();
+        String managerTeamName = SaveManager.loadManagerTeamName(selectedSport);
 
         ITeam loadedTeam = loadedLeague.getStandings().get(0);
         for (ITeam team : loadedLeague.getStandings()) {
@@ -106,21 +107,21 @@ public class HelloController {
             }
         }
 
-        String managerTactic = SaveManager.loadManagerTactic();
+        String managerTactic = SaveManager.loadManagerTactic(selectedSport);
 
         if (loadedTeam instanceof Team && managerTactic != null) {
             ((Team) loadedTeam).setActiveTacticName(managerTactic);
         }
 
         Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        goToDashboard(loadedLeague, loadedTeam, stage, true);
+        goToDashboard(loadedLeague, loadedTeam, stage, true, selectedSport);
     }
 
     private void goToDashboard(League league, ITeam myTeam, Stage stage) {
-        goToDashboard(league, myTeam, stage, false);
+        goToDashboard(league, myTeam, stage, false, "");
     }
 
-    private void goToDashboard(League league, ITeam myTeam, Stage stage, boolean restoreLineup) {
+    private void goToDashboard(League league, ITeam myTeam, Stage stage, boolean restoreLineup, String selectedSport) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("dashboard-view.fxml"));
             Parent root = loader.load();
@@ -129,8 +130,8 @@ public class HelloController {
 
             if (restoreLineup) {
                 controller.restoreSavedLineup(
-                        SaveManager.loadLineupPlayerNames("starter"),
-                        SaveManager.loadLineupPlayerNames("substitute")
+                        SaveManager.loadLineupPlayerNames("starter", selectedSport),
+                        SaveManager.loadLineupPlayerNames("substitute", selectedSport)
                 );
             }
 
