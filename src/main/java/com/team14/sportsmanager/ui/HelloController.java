@@ -113,15 +113,27 @@ public class HelloController {
         }
 
         Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        goToDashboard(loadedLeague, loadedTeam, stage);
+        goToDashboard(loadedLeague, loadedTeam, stage, true);
     }
 
     private void goToDashboard(League league, ITeam myTeam, Stage stage) {
+        goToDashboard(league, myTeam, stage, false);
+    }
+
+    private void goToDashboard(League league, ITeam myTeam, Stage stage, boolean restoreLineup) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("dashboard-view.fxml"));
             Parent root = loader.load();
             DashboardController controller = loader.getController();
             controller.setLeagueAndTeam(league, myTeam);
+
+            if (restoreLineup) {
+                controller.restoreSavedLineup(
+                        SaveManager.loadLineupPlayerNames("starter"),
+                        SaveManager.loadLineupPlayerNames("substitute")
+                );
+            }
+
             stage.setScene(new Scene(root, 1000, 700));
             stage.setResizable(true);
             stage.centerOnScreen();

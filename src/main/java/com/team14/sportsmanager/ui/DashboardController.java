@@ -57,6 +57,33 @@ public class DashboardController {
         showTeamDetails(myTeam);
     }
 
+    public void restoreSavedLineup(java.util.List<String> starterNames, java.util.List<String> substituteNames) {
+        myStarters.clear();
+        mySubs.clear();
+
+        if (starterNames != null) {
+            for (String name : starterNames) {
+                for (IPlayer player : myTeam.getRoster()) {
+                    if (player.getName().equals(name) && !player.isInjured() && myStarters.size() < 7) {
+                        myStarters.add(player);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (substituteNames != null) {
+            for (String name : substituteNames) {
+                for (IPlayer player : myTeam.getRoster()) {
+                    if (player.getName().equals(name) && !player.isInjured() && mySubs.size() < 3) {
+                        mySubs.add(player);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     private void setupTables() {
         teamNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTeamName()));
         pointsCol.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getTotalPoints()).asObject());
@@ -130,7 +157,7 @@ public class DashboardController {
         }
 
         String sportType = detectSportType();
-        SaveManager.saveGame(currentLeague, sportType, myTeam.getTeamName(), myTactic);
+        SaveManager.saveGame(currentLeague, sportType, myTeam.getTeamName(), myTactic, myStarters, mySubs);
         weekLabel.setText("Game saved successfully.");
     }
 
@@ -170,12 +197,20 @@ public class DashboardController {
         return "Handball".equalsIgnoreCase(sportType) ? "6-0 Balanced" : "4-2-1 Balanced";
     }
 
+    private void removeInjuredPlayersFromSelection() {
+        myStarters.removeIf(IPlayer::isInjured);
+        mySubs.removeIf(IPlayer::isInjured);
+    }
+
+
     @FXML
     protected void onNextWeekClick() {
         if (currentLeague.isLeagueFinished()) {
             weekLabel.setText("League is Finished!");
             return;
         }
+
+        removeInjuredPlayersFromSelection();
 
         if (myStarters.size() != 7) {
             weekLabel.setText("ERROR: You must set exactly 7 starters in the Locker Room first!");
@@ -217,7 +252,12 @@ public class DashboardController {
 
     private void openLiveMatchScreen(com.team14.sportsmanager.core.IMatch matchObj, com.team14.sportsmanager.core.ITeam opponent) {
         com.team14.sportsmanager.logic.MatchEngine actualMatch = (com.team14.sportsmanager.logic.MatchEngine) matchObj;
-        actualMatch.setLineup(myTeam, myStarters);
+        try {
+            actualMatch.setLineup(myTeam, myStarters);
+        } catch (IllegalArgumentException ex) {
+            weekLabel.setText("ERROR: Invalid lineup. Please update your starters in the Locker Room.");
+            return;
+        }
         javafx.stage.Stage matchStage = new javafx.stage.Stage();
         matchStage.setTitle("LIVE MATCH");
         final int[] currentQuarter = {1};
@@ -422,6 +462,11 @@ public class DashboardController {
         javafx.scene.control.Button btnStarter = new javafx.scene.control.Button("Add to Starters ->");
         btnStarter.setOnAction(e -> {
             String sel = rosterList.getSelectionModel().getSelectedItem();
+            if (sel != null && sel.contains("[INJURED]")) {
+                title.setText("ERROR: Injured players cannot play!");
+                title.setTextFill(javafx.scene.paint.Color.RED);
+                return;
+            }
             if (sel != null && startersList.getItems().size() < 7) {
                 IPlayer selectedPlayer = myTeam.getRoster().stream()
                         .filter(p -> p.getName().equals(sel))
@@ -439,6 +484,11 @@ public class DashboardController {
         javafx.scene.control.Button btnSub = new javafx.scene.control.Button("Add to Subs ->");
         btnSub.setOnAction(e -> {
             String sel = rosterList.getSelectionModel().getSelectedItem();
+            if (sel != null && sel.contains("[INJURED]")) {
+                title.setText("ERROR: Injured players cannot play!");
+                title.setTextFill(javafx.scene.paint.Color.RED);
+                return;
+            }
             if (sel != null && subsList.getItems().size() < 3) {
                 IPlayer selectedPlayer = myTeam.getRoster().stream()
                         .filter(p -> p.getName().equals(sel))

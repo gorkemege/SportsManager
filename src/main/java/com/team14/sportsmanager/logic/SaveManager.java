@@ -9,6 +9,7 @@ import com.team14.sportsmanager.model.HeadballCoach;
 import com.team14.sportsmanager.model.HeadballPlayer;
 import com.team14.sportsmanager.model.Team;
 
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +19,13 @@ public class SaveManager {
 
     private static final String DB_URL = "jdbc:sqlite:sports_manager_save.db";
 
-    public static void saveGame(League league, String sportType, String managerTeamName, String managerTactic) {
+    public static void saveGame(League league, String sportType, String managerTeamName, String managerTactic, List<IPlayer> starters, List<IPlayer> substitutes) {
         try (Connection conn = DriverManager.getConnection(DB_URL)) {
             conn.setAutoCommit(false);
             clearDatabase(conn);
             createTables(conn);
+            saveGameState(conn, sportType, league.getCurrentWeek(), managerTeamName, managerTactic);
+            saveLineup(conn, starters, substitutes);
 
             for (ITeam team : league.getStandings()) {
                 long teamId = saveTeam(conn, team);
@@ -46,6 +49,11 @@ public class SaveManager {
     public static League loadGame() {
         try (Connection conn = DriverManager.getConnection(DB_URL)) {
             String sportType = loadSportType(conn);
+
+            if (sportType == null || sportType.isBlank()) {
+                sportType = "Headball";
+            }
+
             int currentWeek = loadCurrentWeek(conn);
 
             List<ITeam> teams = loadTeams(conn, sportType);
@@ -66,15 +74,14 @@ public class SaveManager {
             return null;
         }
     }
-
     private static void createTables(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.execute("""
             CREATE TABLE IF NOT EXISTS game_state (
                 id INTEGER PRIMARY KEY,
                 sport_type TEXT,
-                current_week INTEGER
-                manager_team_name TEXT
+                current_week INTEGER,
+                manager_team_name TEXT,
                 manager_tactic TEXT                                  
             )
         """);
@@ -117,6 +124,14 @@ public class SaveManager {
                 points INTEGER
             )
         """);
+        stmt.execute("""
+            CREATE TABLE IF NOT EXISTS manager_lineup (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_name TEXT,
+                role TEXT,
+                slot INTEGER
+            )
+        """);
     }
 
     private static void clearDatabase(Connection conn) throws SQLException {
@@ -126,6 +141,7 @@ public class SaveManager {
         stmt.execute("DROP TABLE IF EXISTS players");
         stmt.execute("DROP TABLE IF EXISTS coaches");
         stmt.execute("DROP TABLE IF EXISTS h2h_records");
+        stmt.execute("DROP TABLE IF EXISTS manager_lineup");
     }
 
     private static void saveGameState(Connection conn, String sportType, int currentWeek, String managerTeamName, String managerTactic) throws SQLException {
@@ -140,17 +156,20 @@ public class SaveManager {
     }
     private static long saveTeam(Connection conn, ITeam team) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-            "INSERT INTO teams (team_name, total_points, goals_scored, goals_conceded) VALUES (?, ?, ?, ?)",
-            Statement.RETURN_GENERATED_KEYS
+            "INSERT INTO teams (team_name, total_points, goals_scored, goals_conceded) VALUES (?, ?, ?, ?)"
+
         );
         ps.setString(1, team.getTeamName());
         ps.setInt(2, team.getTotalPoints());
         ps.setInt(3, team.getGoalsScored());
         ps.setInt(4, team.getGoalsConceded());
         ps.executeUpdate();
-        ResultSet rs = ps.getGeneratedKeys();
-        rs.next();
-        return rs.getLong(1);
+
+        ResultSet rs = conn.createStatement().executeQuery("SELECT last_insert_rowid()");
+        if (rs.next()) {
+            return rs.getLong(1);
+        }
+        throw new SQLException("Could not read generated team id.");
     }
 
     private static void savePlayers(Connection conn, long teamId, List<IPlayer> players, String sportType) throws SQLException {
@@ -215,14 +234,48 @@ public class SaveManager {
         ps.executeUpdate();
     }
 
+    private static void saveLineup(Connection conn, List<IPlayer> starters, List<IPlayer> substitutes) throws SQLException {
+        if (starters != null) {
+            for (int i = 0; i < starters.size(); i++) {
+                saveLineupPlayer(conn, starters.get(i).getName(), "starter", i);
+            }
+        }
+
+        if (substitutes != null) {
+            for (int i = 0; i < substitutes.size(); i++) {
+                saveLineupPlayer(conn, substitutes.get(i).getName(), "substitute", i);
+            }
+        }
+    }
+
+    private static void saveLineupPlayer(Connection conn, String playerName, String role, int slot) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO manager_lineup (player_name, role, slot) VALUES (?, ?, ?)"
+        );
+        ps.setString(1, playerName);
+        ps.setString(2, role);
+        ps.setInt(3, slot);
+        ps.executeUpdate();
+    }
+
     private static String loadSportType(Connection conn) throws SQLException {
         ResultSet rs = conn.createStatement().executeQuery("SELECT sport_type FROM game_state WHERE id = 1");
-        return rs.getString("sport_type");
+
+        if (rs.next()) {
+            return rs.getString("sport_type");
+        }
+
+        return null;
     }
 
     private static int loadCurrentWeek(Connection conn) throws SQLException {
         ResultSet rs = conn.createStatement().executeQuery("SELECT current_week FROM game_state WHERE id = 1");
-        return rs.getInt("current_week");
+
+        if (rs.next()) {
+            return rs.getInt("current_week");
+        }
+
+        return 0;
     }
 
     public static String loadManagerTeamName() {
@@ -249,6 +302,26 @@ public class SaveManager {
         }
 
         return null;
+    }
+
+    public static List<String> loadLineupPlayerNames(String role) {
+        List<String> names = new ArrayList<>();
+
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            PreparedStatement ps = conn.prepareStatement(
+                    "SELECT player_name FROM manager_lineup WHERE role = ? ORDER BY slot ASC"
+            );
+            ps.setString(1, role);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                names.add(rs.getString("player_name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return names;
     }
 
     private static List<ITeam> loadTeams(Connection conn, String sportType) throws SQLException {
