@@ -32,18 +32,18 @@ public class SportFactory {
 
         List<String> teamNames = NameGenerator.getTeamNames(sportType);
 
-        if ("HeadBall".equalsIgnoreCase(sportType)) {
-            for (int i = 0; i <= 20; i++) {
+        if ("Headball".equalsIgnoreCase(sportType)) {
+            for (int i = 0; i < 20; i++) {
                 String teamName = (teamNames.size() > i) ? teamNames.get(i) : "Headball FC " + (i + 1);
                 Team team = new Team(teamName);
            
-                for (int j = 0; j <= 10; j++) {
+                for (int j = 0; j < 10; j++) {
                     int headPower = 50 + rand.nextInt(5);
                     int jumpHeight = 50 + rand.nextInt(5);
                     team.addPlayer(new HeadballPlayer(NameGenerator.randomName(), headPower, jumpHeight));
                 }
 
-                for (int c = 0; c <= 3; c++) {
+                for (int c = 0; c < 3; c++) {
                     int headPowerSkill = 50 + rand.nextInt(5);
                     int jumpSkill = 50 + rand.nextInt(5);
                     team.addCoach(new HeadballCoach(NameGenerator.randomName(), headPowerSkill, jumpSkill));

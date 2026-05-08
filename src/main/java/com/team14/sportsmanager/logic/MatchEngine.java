@@ -21,6 +21,8 @@ public class MatchEngine implements IMatch {
     private boolean isFinished;
     private Map<ITeam, Integer> scoreMap;
     private List<String> matchEvents;
+    private List<IPlayer> team1Lineup;
+    private List<IPlayer> team2Lineup;
 
     public MatchEngine(ISport sport, ITeam t1, ITeam t2) {
         this.currentSport = sport;
@@ -33,11 +35,50 @@ public class MatchEngine implements IMatch {
         this.scoreMap = new HashMap<>();
         this.scoreMap.put(this.team1, 0);
         this.scoreMap.put(this.team2, 0);
+        this.team1Lineup = defaultLineup(t1);
+        this.team2Lineup = defaultLineup(t2);
     }
 
     public void simulateMatch() {
         while (!isFinished) {
             simulatePeriod();
+        }
+    }
+
+    private List<IPlayer> defaultLineup(ITeam team) {
+        List<IPlayer> lineup = new ArrayList<>();
+
+        for (IPlayer player : team.getRoster()) {
+            if (!player.isInjured()) {
+                lineup.add(player);
+            }
+
+            if (lineup.size() == 7) {
+                break;
+            }
+        }
+
+        return lineup;
+    }
+
+    public void setLineup(ITeam team, List<IPlayer> lineup) {
+
+        if (lineup == null || lineup.size() != 7) {
+            throw new IllegalArgumentException("Lineup must contain exactly 7 players.");
+        }
+
+        for (IPlayer player : lineup) {
+            if (player.isInjured()) {
+                throw new IllegalArgumentException("Injured players cannot be in the lineup.");
+            }
+        }
+
+        if (team == team1) {
+            this.team1Lineup = new ArrayList<>(lineup);
+        } else if (team == team2) {
+            this.team2Lineup = new ArrayList<>(lineup);
+        } else {
+            throw new IllegalArgumentException("Lineup team is not part of this match.");
         }
     }
 
@@ -56,16 +97,19 @@ public class MatchEngine implements IMatch {
         int t1Goals = 0;
         int t2Goals = 0;
 
-        for (int i = 0; i < 6; i++) {
+        int scoringAttempts = getScoringAttemptsPerPeriod();
+        double scoreChance = getScoreChance();
+
+        for (int i = 0; i < scoringAttempts; i++) {
             double totalPower = t1Power + t2Power;
             double chance = rand.nextDouble() * totalPower;
 
             if (chance < t1Power) {
-                if (rand.nextDouble() < 0.35) {
+                if (rand.nextDouble() < scoreChance) {
                     t1Goals++;
                 }
             } else {
-                if (rand.nextDouble() < 0.35) {
+                if (rand.nextDouble() < scoreChance) {
                     t2Goals++;
                 }
             }
@@ -83,13 +127,38 @@ public class MatchEngine implements IMatch {
             finalizeMatch();
         }
     }
-    
+
+    private int getScoringAttemptsPerPeriod() {
+        if ("Headball".equalsIgnoreCase(currentSport.getSportName())) {
+            return 18;
+        }
+
+        if ("Handball".equalsIgnoreCase(currentSport.getSportName())) {
+            return 20;
+        }
+
+        return 10;
+    }
+
+    private double getScoreChance() {
+        if ("Headball".equalsIgnoreCase(currentSport.getSportName())) {
+            return 0.45;
+        }
+
+        if ("Handball".equalsIgnoreCase(currentSport.getSportName())) {
+            return 0.50;
+        }
+
+        return 0.40;
+    }
     
     private double calculateTeamPower(ITeam team) {
-        double power = 50.0; 
+        double power = 50.0;
 
-        
-        for (IPlayer player : team.getRoster()) {
+
+        List<IPlayer> lineup = (team == team1) ? team1Lineup : team2Lineup;
+
+        for (IPlayer player : lineup) {
             if (!player.isInjured()) {
                 for (int attributeValue : player.getAttributes().values()) {
                     power += attributeValue;

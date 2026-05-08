@@ -32,5 +32,6 @@
 
 
     <Button fx:id="startNewGameButton" mnemonicParsing="false" onAction="#onStartNewGameClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 5;" text="Start New Game" />
+    <Button mnemonicParsing="false" onAction="#onLoadGameClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 5;" text="Load Game" />
 
 </VBox>

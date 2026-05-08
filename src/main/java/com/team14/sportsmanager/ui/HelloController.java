@@ -17,12 +17,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import com.team14.sportsmanager.logic.SaveManager;
+import com.team14.sportsmanager.model.Team;
 public class HelloController {
     @FXML private ComboBox<String> sportSelectionBox;
     @FXML private Button startNewGameButton;
     @FXML
     public void initialize() {
-        sportSelectionBox.getItems().add("HeadBall");
+        sportSelectionBox.getItems().add("Headball");
         sportSelectionBox.getItems().add("Handball");
         sportSelectionBox.getSelectionModel().selectFirst();
     }
@@ -84,6 +86,34 @@ public class HelloController {
         Stage stage = (Stage) startNewGameButton.getScene().getWindow();
         stage.setScene(teamScene);
         stage.centerOnScreen();
+    }
+
+    @FXML
+    protected void onLoadGameClick(ActionEvent event) {
+        League loadedLeague = SaveManager.loadGame();
+
+        if (loadedLeague == null || loadedLeague.getStandings().isEmpty()) {
+            return;
+        }
+
+        String managerTeamName = SaveManager.loadManagerTeamName();
+
+        ITeam loadedTeam = loadedLeague.getStandings().get(0);
+        for (ITeam team : loadedLeague.getStandings()) {
+            if (team.getTeamName().equals(managerTeamName)) {
+                loadedTeam = team;
+                break;
+            }
+        }
+
+        String managerTactic = SaveManager.loadManagerTactic();
+
+        if (loadedTeam instanceof Team && managerTactic != null) {
+            ((Team) loadedTeam).setActiveTacticName(managerTactic);
+        }
+
+        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        goToDashboard(loadedLeague, loadedTeam, stage);
     }
 
     private void goToDashboard(League league, ITeam myTeam, Stage stage) {

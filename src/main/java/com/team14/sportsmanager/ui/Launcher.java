@@ -13,10 +13,10 @@ public class Launcher {
         System.out.println("       SPORTS MANAGER SIMULATION STARTED          ");
         System.out.println("==================================================\n");
 
-        ISport headball = SportFactory.createSport("HeadBall");
+        ISport headball = SportFactory.createSport("Headball");
         System.out.println("[SYSTEM] Sport initialized: " + headball.getSportName());
 
-        List<ITeam> league = SportFactory.createLeagueTeams("HeadBall");
+        List<ITeam> league = SportFactory.createLeagueTeams("Headball");
         System.out.println("[SYSTEM] League created with " + league.size() + " teams.\n");
 
         ITeam team1 = league.get(0);

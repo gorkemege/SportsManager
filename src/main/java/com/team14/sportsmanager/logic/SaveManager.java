@@ -18,12 +18,11 @@ public class SaveManager {
 
     private static final String DB_URL = "jdbc:sqlite:sports_manager_save.db";
 
-    public static void saveGame(League league, String sportType) {
+    public static void saveGame(League league, String sportType, String managerTeamName, String managerTactic) {
         try (Connection conn = DriverManager.getConnection(DB_URL)) {
             conn.setAutoCommit(false);
             clearDatabase(conn);
             createTables(conn);
-            saveGameState(conn, sportType, league.getCurrentWeek());
 
             for (ITeam team : league.getStandings()) {
                 long teamId = saveTeam(conn, team);
@@ -75,6 +74,8 @@ public class SaveManager {
                 id INTEGER PRIMARY KEY,
                 sport_type TEXT,
                 current_week INTEGER
+                manager_team_name TEXT
+                manager_tactic TEXT                                  
             )
         """);
         stmt.execute("""
@@ -127,15 +128,16 @@ public class SaveManager {
         stmt.execute("DROP TABLE IF EXISTS h2h_records");
     }
 
-    private static void saveGameState(Connection conn, String sportType, int currentWeek) throws SQLException {
+    private static void saveGameState(Connection conn, String sportType, int currentWeek, String managerTeamName, String managerTactic) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-            "INSERT INTO game_state (id, sport_type, current_week) VALUES (1, ?, ?)"
+                "INSERT INTO game_state (id, sport_type, current_week, manager_team_name, manager_tactic) VALUES (1, ?, ?, ?, ?)"
         );
         ps.setString(1, sportType);
         ps.setInt(2, currentWeek);
+        ps.setString(3, managerTeamName);
+        ps.setString(4, managerTactic);
         ps.executeUpdate();
     }
-
     private static long saveTeam(Connection conn, ITeam team) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
             "INSERT INTO teams (team_name, total_points, goals_scored, goals_conceded) VALUES (?, ?, ?, ?)",
@@ -223,6 +225,32 @@ public class SaveManager {
         return rs.getInt("current_week");
     }
 
+    public static String loadManagerTeamName() {
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            ResultSet rs = conn.createStatement().executeQuery("SELECT manager_team_name FROM game_state WHERE id = 1");
+            if (rs.next()) {
+                return rs.getString("manager_team_name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static String loadManagerTactic() {
+        try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            ResultSet rs = conn.createStatement().executeQuery("SELECT manager_tactic FROM game_state WHERE id = 1");
+            if (rs.next()) {
+                return rs.getString("manager_tactic");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     private static List<ITeam> loadTeams(Connection conn, String sportType) throws SQLException {
         List<ITeam> teams = new ArrayList<>();
         ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM teams");
@@ -253,16 +281,26 @@ public class SaveManager {
             boolean isInjured = rs.getInt("is_injured") == 1;
             int injuryDuration = rs.getInt("injury_duration");
 
+            Map<String, Integer> attrs = new java.util.HashMap<>();
+
+            for (int i = 1; i <= 4; i++) {
+                String attrName = rs.getString("attr" + i + "_name");
+
+                if (attrName != null) {
+                    attrs.put(attrName, rs.getInt("attr" + i + "_value"));
+                }
+            }
+
             IPlayer player;
             if ("Handball".equalsIgnoreCase(sportType)) {
-                int throwPower = rs.getInt("attr1_value");
-                int speed = rs.getInt("attr2_value");
-                int agility = rs.getInt("attr3_value");
-                int goalkeeping = rs.getInt("attr4_value");
+                int throwPower = attrs.getOrDefault("ThrowPower", 50);
+                int speed = attrs.getOrDefault("Speed", 50);
+                int agility = attrs.getOrDefault("Agility", 50);
+                int goalkeeping = attrs.getOrDefault("GoalkeepingSkill", 50);
                 player = new HandballPlayer(name, throwPower, speed, agility, goalkeeping);
             } else {
-                int headPower = rs.getInt("attr1_value");
-                int jumpHeight = rs.getInt("attr2_value");
+                int headPower = attrs.getOrDefault("HeadPower", 50);
+                int jumpHeight = attrs.getOrDefault("JumpHeight", 50);
                 player = new HeadballPlayer(name, headPower, jumpHeight);
             }
 
@@ -278,15 +316,25 @@ public class SaveManager {
 
         while (rs.next()) {
             String name = rs.getString("name");
+            Map<String, Integer> specs = new java.util.HashMap<>();
+
+            for (int i = 1; i <= 3; i++) {
+                String specName = rs.getString("spec" + i + "_name");
+
+                if (specName != null) {
+                    specs.put(specName, rs.getInt("spec" + i + "_value"));
+                }
+            }
+
             ICoach coach;
             if ("Handball".equalsIgnoreCase(sportType)) {
-                int throwSkill = rs.getInt("spec1_value");
-                int speedSkill = rs.getInt("spec2_value");
-                int agilitySkill = rs.getInt("spec3_value");
+                int throwSkill = specs.getOrDefault("ThrowPower", 50);
+                int speedSkill = specs.getOrDefault("Speed", 50);
+                int agilitySkill = specs.getOrDefault("Agility", 50);
                 coach = new HandballCoach(name, throwSkill, speedSkill, agilitySkill);
             } else {
-                int headSkill = rs.getInt("spec1_value");
-                int jumpSkill = rs.getInt("spec2_value");
+                int headSkill = specs.getOrDefault("HeadPower", 50);
+                int jumpSkill = specs.getOrDefault("JumpHeight", 50);
                 coach = new HeadballCoach(name, headSkill, jumpSkill);
             }
             team.addCoach(coach);

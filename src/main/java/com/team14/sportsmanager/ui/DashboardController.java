@@ -11,6 +11,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import com.team14.sportsmanager.model.Team;
+import com.team14.sportsmanager.logic.SaveManager;
+
 public class DashboardController {
     @FXML
     private Label weekLabel;
@@ -34,11 +37,18 @@ public class DashboardController {
     private ListView<String> coachesList;
     private League currentLeague;
     private ITeam myTeam;
+    private String sportType = "Headball";
 
 
     public void setLeagueAndTeam(League league, ITeam chosenTeam) {
         this.currentLeague = league;
         this.myTeam = chosenTeam;
+        this.sportType = detectSportType();
+        if (chosenTeam instanceof Team && ((Team) chosenTeam).getActiveTacticName() != null) {
+            this.myTactic = ((Team) chosenTeam).getActiveTacticName();
+        } else {
+            this.myTactic = getDefaultTactic();
+        }
 
         setupTables();
         updateUI();
@@ -73,21 +83,9 @@ public class DashboardController {
             weekLabel.setText("Current Week: " + currentLeague.getCurrentWeek());
         }
 
-        java.util.List<com.team14.sportsmanager.core.ITeam> sortedStandings = new java.util.ArrayList<>(currentLeague.getStandings());
-        sortedStandings.sort((t1, t2) -> {
-            if (t1.getTotalPoints() != t2.getTotalPoints()) {
-                return Integer.compare(t2.getTotalPoints(), t1.getTotalPoints());
-            }
-            try {
-                int sayi1 = Integer.parseInt(t1.getTeamName().replaceAll("[^0-9]", ""));
-                int sayi2 = Integer.parseInt(t2.getTeamName().replaceAll("[^0-9]", ""));
-                return Integer.compare(sayi1, sayi2);
-            } catch (Exception e) {
-                return t1.getTeamName().compareTo(t2.getTeamName());
-            }
-        });
 
-        standingsTable.setItems(javafx.collections.FXCollections.observableArrayList(sortedStandings));
+
+        standingsTable.setItems(javafx.collections.FXCollections.observableArrayList(currentLeague.getStandings()));
 
         ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
@@ -122,7 +120,55 @@ public class DashboardController {
 
     private java.util.List<com.team14.sportsmanager.core.IPlayer> myStarters = new java.util.ArrayList<>();
     private java.util.List<com.team14.sportsmanager.core.IPlayer> mySubs = new java.util.ArrayList<>();
-    private String myTactic = "4-2-1 Balanced";
+    private String myTactic = getDefaultTactic();
+
+    @FXML
+    protected void onSaveGameClick() {
+        if (currentLeague == null) {
+            weekLabel.setText("No active game to save.");
+            return;
+        }
+
+        String sportType = detectSportType();
+        SaveManager.saveGame(currentLeague, sportType, myTeam.getTeamName(), myTactic);
+        weekLabel.setText("Game saved successfully.");
+    }
+
+    private String detectSportType() {
+        if (myTeam != null && !myTeam.getRoster().isEmpty()) {
+            String attrs = myTeam.getRoster().get(0).getAttributes().keySet().toString();
+
+            if (attrs.contains("ThrowPower")) {
+                return "Handball";
+            }
+
+            if (attrs.contains("HeadPower")) {
+                return "Headball";
+            }
+        }
+
+        return "Headball";
+    }
+
+    private java.util.List<String> getAvailableTactics() {
+        java.util.List<String> tactics = new java.util.ArrayList<>();
+
+        if ("Handball".equalsIgnoreCase(sportType)) {
+            tactics.add("6-0 Balanced");
+            tactics.add("5-1 Offensive");
+            tactics.add("6-0 Defensive");
+        } else {
+            tactics.add("4-2-1 Balanced");
+            tactics.add("3-3-1 Offensive");
+            tactics.add("5-1-1 Defensive");
+        }
+
+        return tactics;
+    }
+
+    private String getDefaultTactic() {
+        return "Handball".equalsIgnoreCase(sportType) ? "6-0 Balanced" : "4-2-1 Balanced";
+    }
 
     @FXML
     protected void onNextWeekClick() {
@@ -171,6 +217,7 @@ public class DashboardController {
 
     private void openLiveMatchScreen(com.team14.sportsmanager.core.IMatch matchObj, com.team14.sportsmanager.core.ITeam opponent) {
         com.team14.sportsmanager.logic.MatchEngine actualMatch = (com.team14.sportsmanager.logic.MatchEngine) matchObj;
+        actualMatch.setLineup(myTeam, myStarters);
         javafx.stage.Stage matchStage = new javafx.stage.Stage();
         matchStage.setTitle("LIVE MATCH");
         final int[] currentQuarter = {1};
@@ -300,6 +347,11 @@ public class DashboardController {
                 mySubs.remove(pSub);
                 myStarters.add(pSub);
                 mySubs.add(pStarter);
+
+                if (actualMatch != null) {
+                    actualMatch.setLineup(myTeam, myStarters);
+                }
+
                 startersList.getItems().remove(pStarter);
                 subsList.getItems().remove(pSub);
                 startersList.getItems().add(pSub);
@@ -308,12 +360,17 @@ public class DashboardController {
         });
 
         javafx.scene.control.ComboBox<String> tacticBox = new javafx.scene.control.ComboBox<>();
-        tacticBox.getItems().addAll("4-2-1 Balanced", "3-3-1 Offensive", "5-1-1 Defensive");
+        tacticBox.getItems().addAll(getAvailableTactics());
         tacticBox.setValue(myTactic);
         javafx.scene.control.Button saveBtn = new javafx.scene.control.Button("CONFIRM CHANGES");
         saveBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
         saveBtn.setOnAction(e -> {
             myTactic = tacticBox.getValue();
+
+            if (myTeam instanceof Team) {
+                ((Team) myTeam).setActiveTacticName(myTactic);
+            }
+
             subStage.close();
         });
 
@@ -423,7 +480,7 @@ public class DashboardController {
         listsHBox.setAlignment(javafx.geometry.Pos.CENTER);
 
         javafx.scene.control.ComboBox<String> tacticBox = new javafx.scene.control.ComboBox<>();
-        tacticBox.getItems().addAll("4-2-1 Balanced", "3-3-1 Offensive", "5-1-1 Defensive");
+        tacticBox.getItems().addAll(getAvailableTactics());
         tacticBox.setValue(myTactic); // Eski taktiği hatırla
         javafx.scene.layout.HBox tacticHBox = new javafx.scene.layout.HBox(10, new javafx.scene.control.Label("Select Tactic:"), tacticBox);
         tacticHBox.setAlignment(javafx.geometry.Pos.CENTER);
@@ -440,6 +497,10 @@ public class DashboardController {
                 myStarters.clear();
                 mySubs.clear();
                 myTactic = tacticBox.getValue();
+
+                if (myTeam instanceof Team) {
+                    ((Team) myTeam).setActiveTacticName(myTactic);
+                }
 
                 for (com.team14.sportsmanager.core.IPlayer p : myTeam.getRoster()) {
                     if (startersList.getItems().contains(p.getName())) {
