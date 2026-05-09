@@ -91,13 +91,38 @@ public class HelloController {
     @FXML
     protected void onLoadGameClick(ActionEvent event) {
         String selectedSport = sportSelectionBox.getValue();
-        League loadedLeague = SaveManager.loadGame(selectedSport);
 
-        if (loadedLeague == null || loadedLeague.getStandings().isEmpty()) {
+        // Dolu slotları bul
+        java.util.List<String> availableSlots = new java.util.ArrayList<>();
+        for (int i = 1; i <= 3; i++) {
+            if (SaveManager.slotExists(selectedSport, i)) {
+                availableSlots.add("Slot " + i);
+            }
+        }
+
+        if (availableSlots.isEmpty()) {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+            alert.setTitle("No Save Found");
+            alert.setHeaderText(null);
+            alert.setContentText("No saved game found for " + selectedSport + ".");
+            alert.showAndWait();
             return;
         }
 
-        String managerTeamName = SaveManager.loadManagerTeamName(selectedSport);
+        javafx.scene.control.ChoiceDialog<String> dialog = new javafx.scene.control.ChoiceDialog<>(availableSlots.get(0), availableSlots);
+        dialog.setTitle("Load Game");
+        dialog.setHeaderText("Choose a save slot to load (" + selectedSport + "):");
+        dialog.setContentText("Slot:");
+
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) return;
+
+        int slot = Integer.parseInt(result.get().replace("Slot ", ""));
+
+        League loadedLeague = SaveManager.loadGame(selectedSport, slot);
+        if (loadedLeague == null || loadedLeague.getStandings().isEmpty()) return;
+
+        String managerTeamName = SaveManager.loadManagerTeamName(selectedSport, slot);
 
         ITeam loadedTeam = loadedLeague.getStandings().get(0);
         for (ITeam team : loadedLeague.getStandings()) {
@@ -107,21 +132,20 @@ public class HelloController {
             }
         }
 
-        String managerTactic = SaveManager.loadManagerTactic(selectedSport);
-
+        String managerTactic = SaveManager.loadManagerTactic(selectedSport, slot);
         if (loadedTeam instanceof Team && managerTactic != null) {
             ((Team) loadedTeam).setActiveTacticName(managerTactic);
         }
 
         Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        goToDashboard(loadedLeague, loadedTeam, stage, true, selectedSport);
+        goToDashboard(loadedLeague, loadedTeam, stage, true, selectedSport, slot);
     }
 
     private void goToDashboard(League league, ITeam myTeam, Stage stage) {
-        goToDashboard(league, myTeam, stage, false, "");
+        goToDashboard(league, myTeam, stage, false, "", 1);
     }
 
-    private void goToDashboard(League league, ITeam myTeam, Stage stage, boolean restoreLineup, String selectedSport) {
+    private void goToDashboard(League league, ITeam myTeam, Stage stage, boolean restoreLineup, String selectedSport, int slot) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("dashboard-view.fxml"));
             Parent root = loader.load();
@@ -130,8 +154,8 @@ public class HelloController {
 
             if (restoreLineup) {
                 controller.restoreSavedLineup(
-                        SaveManager.loadLineupPlayerNames("starter", selectedSport),
-                        SaveManager.loadLineupPlayerNames("substitute", selectedSport)
+                        SaveManager.loadLineupPlayerNames("starter", selectedSport, slot),
+                        SaveManager.loadLineupPlayerNames("substitute", selectedSport, slot)
                 );
             }
 

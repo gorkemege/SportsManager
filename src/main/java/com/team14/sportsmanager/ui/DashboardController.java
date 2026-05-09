@@ -51,6 +51,7 @@ public class DashboardController {
     private java.util.List<IPlayer> myStarters = new java.util.ArrayList<>();
     private java.util.List<IPlayer> mySubs     = new java.util.ArrayList<>();
     private String myTactic = "4-2-1 Balanced";
+    private int currentSlot = 1;
 
 
     public void setLeagueAndTeam(League league, ITeam chosenTeam) {
@@ -663,37 +664,72 @@ public class DashboardController {
     @FXML
     protected void onSaveGameClick() {
         if (currentLeague == null) return;
-        SaveManager.saveGame(currentLeague, detectSportType(),
-                myTeam.getTeamName(), myTactic, myStarters, mySubs);
-        weekLabel.setText("Saved!  Week " + currentLeague.getCurrentWeek()
-                + " / " + currentLeague.getFixtures().size());
+        String sport = detectSportType();
+
+        javafx.scene.control.ChoiceDialog<String> dialog = new javafx.scene.control.ChoiceDialog<>("Slot 1",
+                java.util.List.of("Slot 1", "Slot 2", "Slot 3"));
+        dialog.setTitle("Save Game");
+        dialog.setHeaderText("Choose a save slot:");
+        dialog.setContentText("Slot:");
+
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) return;
+
+        int slot = Integer.parseInt(result.get().replace("Slot ", ""));
+        this.currentSlot = slot;
+        SaveManager.saveGame(currentLeague, sport, myTeam.getTeamName(), myTactic, myStarters, mySubs, slot);
+        weekLabel.setText("Saved to Slot " + slot + "!");
     }
 
     @FXML
     protected void onLoadGameClick() {
         String sport = detectSportType();
-        League loaded = SaveManager.loadGame(sport);
+
+        java.util.List<String> availableSlots = new java.util.ArrayList<>();
+        for (int i = 1; i <= 3; i++) {
+            if (SaveManager.slotExists(sport, i)) {
+                availableSlots.add("Slot " + i);
+            }
+        }
+
+        if (availableSlots.isEmpty()) {
+            weekLabel.setText("No save found for " + sport + ".");
+            return;
+        }
+
+        javafx.scene.control.ChoiceDialog<String> dialog =
+                new javafx.scene.control.ChoiceDialog<>(availableSlots.get(0), availableSlots);
+        dialog.setTitle("Load Game");
+        dialog.setHeaderText("Choose a save slot (" + sport + "):");
+        dialog.setContentText("Slot:");
+
+        java.util.Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) return;
+
+        int slot = Integer.parseInt(result.get().replace("Slot ", ""));
+        this.currentSlot = slot;
+
+        League loaded = SaveManager.loadGame(sport, slot);
         if (loaded == null) { weekLabel.setText("No save found."); return; }
         this.currentLeague = loaded;
 
-        String savedName = SaveManager.loadManagerTeamName(sport);
+        String savedName = SaveManager.loadManagerTeamName(sport, slot);
         for (ITeam t : loaded.getStandings())
             if (t.getTeamName().equals(savedName)) { myTeam = t; break; }
 
-        String savedTactic = SaveManager.loadManagerTactic(sport);
+        String savedTactic = SaveManager.loadManagerTactic(sport, slot);
         if (myTeam instanceof Team && savedTactic != null)
             ((Team) myTeam).setActiveTacticName(savedTactic);
 
         myStarters.clear(); mySubs.clear();
         restoreSavedLineup(
-                SaveManager.loadLineupPlayerNames("starter", sport),
-                SaveManager.loadLineupPlayerNames("substitute", sport));
+                SaveManager.loadLineupPlayerNames("starter", sport, slot),
+                SaveManager.loadLineupPlayerNames("substitute", sport, slot));
 
         updateUI();
         showTeamDetails(myTeam);
         standingsTable.getSelectionModel().select(myTeam);
     }
-
 
     private boolean handleInjuredStarters() {
         java.util.List<IPlayer> injured = new java.util.ArrayList<>();

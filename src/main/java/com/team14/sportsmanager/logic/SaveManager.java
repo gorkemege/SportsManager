@@ -17,12 +17,12 @@ import java.util.Map;
 
 public class SaveManager {
 
-    private static String getDbUrl(String sportType) {
-        return "jdbc:sqlite:sports_manager_save_" + sportType.toLowerCase() + ".db";
+    private static String getDbUrl(String sportType, int slot) {
+        return "jdbc:sqlite:sports_manager_save_" + sportType.toLowerCase() + "_" + slot + ".db";
     }
 
-    public static void saveGame(League league, String sportType, String managerTeamName, String managerTactic, List<IPlayer> starters, List<IPlayer> substitutes) {
-        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType))) {
+    public static void saveGame(League league, String sportType, String managerTeamName, String managerTactic, List<IPlayer> starters, List<IPlayer> substitutes, int slot) {
+        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType, slot))) {
             conn.setAutoCommit(false);
             clearDatabase(conn);
             createTables(conn);
@@ -48,8 +48,8 @@ public class SaveManager {
         }
     }
 
-    public static League loadGame(String sportType) {
-        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType))) {
+    public static League loadGame(String sportType, int slot) {
+        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType, slot))) {
 
             int currentWeek = loadCurrentWeek(conn);
 
@@ -275,8 +275,8 @@ public class SaveManager {
         return 0;
     }
 
-    public static String loadManagerTeamName(String sportType) {
-        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType))) {
+    public static String loadManagerTeamName(String sportType, int slot) {
+        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType, slot))) {
             ResultSet rs = conn.createStatement().executeQuery("SELECT manager_team_name FROM game_state WHERE id = 1");
             if (rs.next()) {
                 return rs.getString("manager_team_name");
@@ -288,8 +288,8 @@ public class SaveManager {
         return null;
     }
 
-    public static String loadManagerTactic(String sportType) {
-        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType))) {
+    public static String loadManagerTactic(String sportType, int slot) {
+        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType, slot))) {
             ResultSet rs = conn.createStatement().executeQuery("SELECT manager_tactic FROM game_state WHERE id = 1");
             if (rs.next()) {
                 return rs.getString("manager_tactic");
@@ -301,10 +301,10 @@ public class SaveManager {
         return null;
     }
 
-    public static List<String> loadLineupPlayerNames(String role, String sportType) {
+    public static List<String> loadLineupPlayerNames(String role, String sportType, int slot) {
         List<String> names = new ArrayList<>();
 
-        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType))) {
+        try (Connection conn = DriverManager.getConnection(getDbUrl(sportType, slot))) {
             PreparedStatement ps = conn.prepareStatement(
                     "SELECT player_name FROM manager_lineup WHERE role = ? ORDER BY slot ASC"
             );
@@ -319,6 +319,11 @@ public class SaveManager {
         }
 
         return names;
+    }
+
+    public static boolean slotExists(String sportType, int slot) {
+        java.io.File f = new java.io.File("sports_manager_save_" + sportType.toLowerCase() + "_" + slot + ".db");
+        return f.exists() && f.length() > 0;
     }
 
     private static List<ITeam> loadTeams(Connection conn, String sportType) throws SQLException {
