@@ -2,6 +2,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
 
 <BorderPane style="-fx-background-color: #0d1117;"
             xmlns="http://javafx.com/javafx/17"
@@ -66,6 +67,9 @@
             <!-- CENTER: TEAM DETAILS -->
             <VBox HBox.hgrow="ALWAYS" spacing="0"
                   style="-fx-background-color: #161b22; -fx-border-color: #21262d; -fx-border-radius: 8; -fx-background-radius: 8;">
+                <ImageView fx:id="teamLogoView" fitWidth="80" fitHeight="80"
+                           preserveRatio="true"
+                           style="-fx-padding: 10 14 0 14;"/>
                 <Label fx:id="selectedTeamNameLabel" text="Select a team from standings"
                        style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e6edf3; -fx-padding: 10 14 10 14; -fx-border-color: #21262d; -fx-border-width: 0 0 1 0;"/>
                 <Label text="PLAYERS"

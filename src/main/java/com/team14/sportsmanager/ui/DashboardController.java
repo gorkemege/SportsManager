@@ -44,6 +44,7 @@ public class DashboardController {
     @FXML private ListView<String> squadList;
 
     @FXML private Label tacticLabel;
+    @FXML private javafx.scene.image.ImageView teamLogoView;
 
     private League currentLeague;
     private ITeam myTeam;
@@ -97,6 +98,41 @@ public class DashboardController {
         });
         teamNameCol.setCellValueFactory(cell ->
                 new SimpleStringProperty(cell.getValue().getTeamName()));
+        teamNameCol.setCellFactory(col -> new TableCell<ITeam, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setGraphic(null); setText(null); return; }
+                if (isSelected()) {
+                    setStyle("-fx-background-color: #1f6feb; -fx-padding: 0;");
+                } else if (getIndex() % 2 == 0) {
+                    setStyle("-fx-background-color: #161b22; -fx-padding: 0;");
+                } else {
+                    setStyle("-fx-background-color: #0d1117; -fx-padding: 0;");
+                }
+
+                javafx.scene.layout.HBox hbox = new javafx.scene.layout.HBox(6);
+                hbox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+                javafx.scene.image.ImageView logo = new javafx.scene.image.ImageView();
+                logo.setFitWidth(22);
+                logo.setFitHeight(22);
+                logo.setPreserveRatio(true);
+
+                String sport = detectSportType().toLowerCase(java.util.Locale.ENGLISH);
+                String logoName = item.toLowerCase(java.util.Locale.ENGLISH).replace(" ", "_") + ".png";
+                java.io.InputStream is = getClass().getResourceAsStream(
+                        "logos/" + sport + "/" + logoName);
+                if (is != null) logo.setImage(new javafx.scene.image.Image(is));
+
+                Label lbl = new Label(item);
+                lbl.setStyle("-fx-text-fill: " + (isSelected() ? "white" : "#e6edf3") + "; -fx-font-size: 13px; -fx-font-weight: bold;");
+                setStyle("-fx-background-color: transparent;");
+                hbox.getChildren().addAll(logo, lbl);
+                setGraphic(hbox);
+                setText(null);
+            }
+        });
         winsCol.setCellValueFactory(cell ->
                 new SimpleIntegerProperty(cell.getValue().getWins()).asObject());
         drawsCol.setCellValueFactory(cell ->
@@ -227,6 +263,19 @@ public class DashboardController {
     }
 
     private void showTeamDetails(ITeam team) {
+
+        if (teamLogoView != null) {
+            String logoName = team.getTeamName().toLowerCase(java.util.Locale.ENGLISH).replace(" ", "_") + ".png";
+            String sport = detectSportType().toLowerCase();
+            String path = "logos/" + sport + "/" + logoName;
+            System.out.println("Looking for logo: " + path);
+            java.io.InputStream is = getClass().getResourceAsStream(
+                    path);
+            System.out.println("Found: " + (is != null));
+            teamLogoView.setImage(is != null ? new javafx.scene.image.Image(is) : null);
+
+        }
+
         int gd = team.getGoalDifference();
         selectedTeamNameLabel.setText(
                 team.getTeamName() + "   —   " + team.getTotalPoints() + " pts"

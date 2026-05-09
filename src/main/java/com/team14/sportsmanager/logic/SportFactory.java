@@ -53,7 +53,7 @@ public class SportFactory {
             }
         } 
         else if ("Handball".equalsIgnoreCase(sportType)) {
-            for (int i = 0; i <= 20; i++) {
+            for (int i = 0; i < 20; i++) {
                 String teamName = (teamNames.size() > i) ? teamNames.get(i) : "Handball FC " + (i + 1);
                 Team team = new Team(teamName);
 
@@ -65,7 +65,7 @@ public class SportFactory {
                     team.addPlayer(new HandballPlayer(NameGenerator.randomName(), throwPower, speed, agility, goalkeeping));
                 }
 
-                for (int c = 0; c <= 3; c++) {
+                for (int c = 0; c < 3; c++) {
                     int throwSkill = 50 + rand.nextInt(5);
                     int speedSkill = 50 + rand.nextInt(5);
                     int agilitySkill = 50 + rand.nextInt(5);
