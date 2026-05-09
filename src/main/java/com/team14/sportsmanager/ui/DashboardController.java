@@ -287,13 +287,7 @@ public class DashboardController {
     }
 
     private java.util.List<ITeam> getSortedStandings() {
-        java.util.List<ITeam> sorted = new java.util.ArrayList<>(currentLeague.getStandings());
-        sorted.sort((a, b) -> {
-            if (b.getTotalPoints() != a.getTotalPoints())
-                return Integer.compare(b.getTotalPoints(), a.getTotalPoints());
-            return Integer.compare(b.getGoalDifference(), a.getGoalDifference());
-        });
-        return sorted;
+        return currentLeague.getStandings();
     }
 
 
