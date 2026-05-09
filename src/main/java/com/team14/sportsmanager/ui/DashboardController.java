@@ -183,6 +183,15 @@ public class DashboardController {
         tacticLabel.setText("Tactic: " + myTactic);
 
         updateSquadPanel();
+
+        ITeam selected = standingsTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            showTeamDetails(selected);
+            playersTable.refresh();
+        } else if (myTeam != null) {
+            showTeamDetails(myTeam);
+            playersTable.refresh();
+        }
     }
 
     private void updateSquadPanel() {

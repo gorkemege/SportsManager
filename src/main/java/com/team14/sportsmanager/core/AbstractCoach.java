@@ -24,18 +24,18 @@ public abstract class AbstractCoach implements ICoach {
     @Override
     public void train(IPlayer player) {
         Map<String, Integer> playerAttrs = player.getAttributes();
-        for (Map.Entry<String, Integer> entry : specialties.entrySet()) {
-            String attr = entry.getKey();
-            int quality = entry.getValue();
+        java.util.Random rand = new java.util.Random();
 
-            if (!playerAttrs.containsKey(attr)) continue;
-
-            int gain = quality / 40;
-            if (gain < 1) gain = 1;
-
-            int current = playerAttrs.get(attr);
-            int updated = Math.min(100, current + gain);
-            player.updateAttribute(attr, updated);
+        java.util.List<String> commonAttrs = new java.util.ArrayList<>();
+        for (String attr : specialties.keySet()) {
+            if (playerAttrs.containsKey(attr)) commonAttrs.add(attr);
         }
+        if (commonAttrs.isEmpty()) return;
+
+        if (rand.nextInt(100) >= 25) return;
+
+        String attr = commonAttrs.get(rand.nextInt(commonAttrs.size()));
+        int current = playerAttrs.get(attr);
+        player.updateAttribute(attr, Math.min(100, current + 1));
     }
 }

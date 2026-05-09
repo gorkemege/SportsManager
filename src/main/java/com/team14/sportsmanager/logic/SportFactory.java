@@ -37,7 +37,7 @@ public class SportFactory {
                 String teamName = (teamNames.size() > i) ? teamNames.get(i) : "Headball FC " + (i + 1);
                 Team team = new Team(teamName);
            
-                for (int j = 0; j < 10; j++) {
+                for (int j = 0; j < 14; j++) {
                     int headPower = 50 + rand.nextInt(5);
                     int jumpHeight = 50 + rand.nextInt(5);
                     team.addPlayer(new HeadballPlayer(NameGenerator.randomName(), headPower, jumpHeight));
@@ -57,7 +57,7 @@ public class SportFactory {
                 String teamName = (teamNames.size() > i) ? teamNames.get(i) : "Handball FC " + (i + 1);
                 Team team = new Team(teamName);
 
-                for (int j = 0; j <= 10; j++) {
+                for (int j = 0; j < 14; j++) {
                     int throwPower = 50 + rand.nextInt(5);
                     int speed = 50 + rand.nextInt(5);
                     int agility = 50 + rand.nextInt(5);
