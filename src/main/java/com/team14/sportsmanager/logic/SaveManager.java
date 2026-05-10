@@ -18,7 +18,9 @@ import java.util.Map;
 public class SaveManager {
 
     private static String getDbUrl(String sportType, int slot) {
-        return "jdbc:sqlite:sports_manager_save_" + sportType.toLowerCase() + "_" + slot + ".db";
+        String saveDir = System.getProperty("user.home") + "/SportsManager";
+        new java.io.File(saveDir).mkdirs();
+        return "jdbc:sqlite:" + saveDir + "/sports_manager_save_" + sportType.toLowerCase() + "_" + slot + ".db";
     }
 
     public static void saveGame(League league, String sportType, String managerTeamName, String managerTactic, List<IPlayer> starters, List<IPlayer> substitutes, int slot) {
@@ -322,7 +324,8 @@ public class SaveManager {
     }
 
     public static boolean slotExists(String sportType, int slot) {
-        java.io.File f = new java.io.File("sports_manager_save_" + sportType.toLowerCase() + "_" + slot + ".db");
+        String saveDir = System.getProperty("user.home") + "/SportsManager";
+        java.io.File f = new java.io.File(saveDir + "/sports_manager_save_" + sportType.toLowerCase() + "_" + slot + ".db");
         return f.exists() && f.length() > 0;
     }
 
